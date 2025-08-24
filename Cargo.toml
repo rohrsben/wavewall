@@ -1,6 +1,13 @@
 [package]
 name = "wavewall"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+
+[lib]
+name = "libwavewall"
+path = "src/lib.rs"
 
 [dependencies]
+clap = "4.5.45"
+kdl = "6.3.4"
+png = "0.17.16"

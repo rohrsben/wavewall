@@ -1,0 +1,2 @@
+if each tileset has its own config, including a list of the tiles, then you can just rely on that instead of reading the directories
+    similiar thing possible with the tilesets themselves, in the main wavewall.kdl?
