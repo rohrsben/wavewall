@@ -7,6 +7,7 @@ use tile::Tile;
 
 #[derive(Debug)]
 pub struct Tileset {
+    pub names: Vec<String>,
     pub tiles: HashMap<String, Tile>
 }
 
@@ -37,22 +38,12 @@ impl Tileset {
             tiles.insert(png.0.strip_suffix(".png").unwrap().to_owned(), value);
         }
 
+        let names = tiles.keys().map(|key| key.to_owned()).collect();
+
         Tileset {
+            names,
             tiles
         }
-    }
-
-    // TODO ugly as sin, prob unnecessary
-    pub fn get_tile_names(&self) -> Vec<String> {
-        let keys = self.tiles.keys();
-
-        let mut res = Vec::new();
-
-        for key in keys {
-            res.push(key.to_owned());
-        }
-
-        res
     }
 
     fn config_dir() -> String {

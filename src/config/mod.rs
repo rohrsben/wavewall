@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use mlua::{Lua, LuaSerdeExt, Table, Value};
+use mlua::{Lua, LuaSerdeExt, Value};
 // use mlua::{Error, Lua, LuaSerdeExt, Result, UserData, Value};
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn parse_config(lua: &Lua) -> Result<Self, ConfigError> {
+    pub fn get_config(lua: &Lua) -> Result<Self, ConfigError> {
         let config = match fs::read_to_string(Self::get_wavewall_config_file()) {
             Ok(str) => str,
             Err(_) => return Err(ConfigError::Read)

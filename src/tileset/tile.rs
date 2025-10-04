@@ -4,8 +4,8 @@ use png::Decoder;
 
 #[derive(Debug)]
 pub struct Tile {
-    length: u32,
-    pixels: Vec<u8>
+    pub length: usize,
+    pub pixels: Vec<u8>
 }
 
 impl Tile {
@@ -17,7 +17,7 @@ impl Tile {
         let info = reader.next_frame(&mut output).unwrap();
 
         Tile {
-            length: info.width,
+            length: info.width as usize,
             pixels: output
         }
     }
