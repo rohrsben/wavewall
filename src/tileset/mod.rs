@@ -1,14 +1,13 @@
 pub mod tile;
 
 use std::collections::HashMap;
-use std::fs;
-use crate::{config};
+use std::{env, fs};
 
 use tile::Tile;
 
 #[derive(Debug)]
 pub struct Tileset {
-    tiles: HashMap<String, Tile>
+    pub tiles: HashMap<String, Tile>
 }
 
 impl Tileset {
@@ -34,7 +33,8 @@ impl Tileset {
         for png in pngs {
             let value = Tile::from_path(png.1);
 
-            tiles.insert(png.0, value);
+            // TODO clean this up
+            tiles.insert(png.0.strip_suffix(".png").unwrap().to_owned(), value);
         }
 
         Tileset {
@@ -42,9 +42,31 @@ impl Tileset {
         }
     }
 
+    // TODO ugly as sin, prob unnecessary
+    pub fn get_tile_names(&self) -> Vec<String> {
+        let keys = self.tiles.keys();
+
+        let mut res = Vec::new();
+
+        for key in keys {
+            res.push(key.to_owned());
+        }
+
+        res
+    }
+
+    fn config_dir() -> String {
+        if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
+            format!("{xdg}/wavewall")
+        } else {
+            let user = env::var("USER").unwrap();
+            format!("/home/{user}/.config/wavewall")
+        }
+    }
+
     // TODO this should probably return a Result
     pub fn get_tileset_dirs() -> Vec<(String, String)> {
-        let conf = config::config_dir();
+        let conf = Self::config_dir(); // temp hack
 
         let conf_iter = match fs::read_dir(conf) {
             Ok(dir_iter) => dir_iter,

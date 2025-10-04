@@ -1,126 +1,51 @@
-mod kdl_util;
-
 use std::{env, fs};
-use kdl::KdlDocument as KDoc;
-use kdl::KdlNode as KNode;
+
+use mlua::{Lua, LuaSerdeExt, Table, Value};
+// use mlua::{Error, Lua, LuaSerdeExt, Result, UserData, Value};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
+pub enum ConfigError {
+    Read,
+    Evaluation,
+    Deserialization,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    pub general: Option<General>
+    pub tileset: String,
 }
 
-#[derive(Debug)]
-pub struct General {
-    pub order: Option<Order>,
-    pub tileset: Option<String>
-}
+impl Config {
+    pub fn parse_config(lua: &Lua) -> Result<Self, ConfigError> {
+        let config = match fs::read_to_string(Self::get_wavewall_config_file()) {
+            Ok(str) => str,
+            Err(_) => return Err(ConfigError::Read)
+        };
 
-#[derive(Debug)]
-pub enum Order {
-    Random,
-    Set
-}
+        let config_result = match lua.load(config).eval::<Value>() {
+            Ok(res) => res,
+            Err(_) => return Err(ConfigError::Evaluation)
+        };
 
-pub fn load() -> Config {
-    let parsed = get_conf();
+        let result: Config = match lua.from_value(config_result) {
+            Ok(res) => res,
+            Err(_) => return Err(ConfigError::Deserialization)
+        };
 
-    Config {
-        general: parse_general(parsed.get("general"))
+        Ok(result)
     }
-}
 
-fn parse_general(node: Option<&KNode>) -> Option<General> {
-    let node = match node {
-        Some(node) => node,
-        None => return None
-    };
-
-    let children = match node.children() {
-        Some(c) => c,
-        None => return None
-    };
-
-    let order = parse_order(children.get("order"));
-
-    let tileset = parse_tileset(children.get("tileset"));
-
-    Some(General {
-        order,
-        tileset
-    })
-}
-
-fn parse_tileset(node: Option<&KNode>) -> Option<String> {
-    let entries = match node {
-        Some(node) => node.entries(),
-        None => return None
-    };
-
-    let res = match entries.len() {
-        0 => return None,
-        _ => &entries[0]
-    };
-
-    let val = res.value();
-
-    if val.is_string() {
-        match val.as_string() {
-            Some(s) => Some(s.to_owned()),
-            None => None
+    pub fn get_config_dir() -> String {
+        if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
+            format!("{xdg}/wavewall")
+        } else {
+            let user = env::var("USER").unwrap();
+            format!("/home/{user}/.config/wavewall")
         }
-    } else {
-        return None
     }
-}
 
-fn parse_order(node: Option<&KNode>) -> Option<Order> {
-    let entries = match node {
-        Some(node) => node.entries(),
-        None => return None
-    };
-
-    let res = match entries.len() {
-        0 => return None,
-        _ => &entries[0]
-    };
-
-    let val = res.value();
-
-    if val.is_string() {
-        match val.as_string() {
-            Some("random") => Some(Order::Random),
-            Some("set") => Some(Order::Set),
-            _ => None
-        }
-    } else {
-        None
-    }
-}
-
-fn get_conf() -> KDoc {
-    let conf = match fs::read_to_string(config_file()) {
-        Ok(result) => result,
-        Err(_) => String::new()
-    };
-
-    match conf.parse() {
-        Ok(doc) => doc,
-        Err(e) => panic!("fucked up the config: {}", e)
-    }
-}
-
-fn config_file() -> String {
-    let mut dir = config_dir();
-    dir.push_str("/wavewall.kdl");
-
-    dir
-}
-
-pub fn config_dir() -> String {
-    if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
-        format!("{xdg}/wavewall")
-    } else {
-        let user = env::var("USER").unwrap();
-        format!("/home/{user}/.config/wavewall")
+    pub fn get_wavewall_config_file() -> String {
+        format!("{}/wavewall.lua", Self::get_config_dir())
     }
 }

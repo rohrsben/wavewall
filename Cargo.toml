@@ -8,6 +8,7 @@ name = "libwavewall"
 path = "src/lib.rs"
 
 [dependencies]
-clap = "4.5.45"
-kdl = "6.3.4"
-png = "0.17.16"
+clap = "4.5.48"
+mlua = { version = "0.11.4", features = ["lua54", "vendored", "serde"] }
+png = "0.18.0"
+serde = { version = "1.0.228", features = ["derive"] }

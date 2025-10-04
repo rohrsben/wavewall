@@ -1,18 +1,19 @@
-use libwavewall;
-use libwavewall::tileset::Tileset;
+use std::fs;
+
+use mlua::{Lua, Table};
+
+use libwavewall::config::Config;
 
 fn main() {
-    let tilesets = Tileset::load_tilesets();
+    let lua = Lua::new();
 
-    println!("tilesets: {:?}", tilesets);
+    let res = match Config::parse_config(&lua) {
+        Ok(conf) => conf,
+        Err(e) => {
+            println!("e: {:?}", e);
+            panic!()
+        }
+    };
+
+    println!("Chosen tileset: {}", res.tileset);
 }
-
-
-
-
-
-
-
-
-
-
