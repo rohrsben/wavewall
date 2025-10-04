@@ -1,52 +1,92 @@
+pub mod pixel;
+
 use std::{fs::File, path::Path};
+use std::io::BufReader;
+
+use png::{Decoder, DecodingError};
 
 use crate::config::Config;
-use crate::tileset::tile::Tile;
+use crate::image::pixel::Pixel;
 
+#[derive(Debug)]
+pub enum ImageError {
+    FileIO(std::io::Error),
+    Decoding(DecodingError)
+}
+
+#[derive(Debug)]
 pub struct Image {
-    pub file: File,
-    pub data: Vec<Vec<u8>>,
+    width: usize,
+    height: usize,
+    pub pixels: Vec<Pixel>,
 }
 
 impl Image {
-    pub fn new(tile_width: usize, rows: usize, columns: usize) -> Self {
-        let file = Self::create_result_file();
-        let data: Vec<Vec<u8>> = vec![vec![0; columns * tile_width]; rows * tile_width];
+    pub fn new(width: usize, height: usize) -> Self {
+        let data: Vec<Pixel> = vec![Pixel::new(); width * height];
 
         Self {
-            file,
-            data
+            width,
+            height,
+            pixels: data
         }
     }
 
-    pub fn place_tile(&mut self, tile: &Tile, row: usize, col: usize) {
-        println!("OPERATING: ROW {} COL {}", row, col);
-        for i in 0..tile.length {
-            let tile_row = i * tile.length;
-            let tile_slice = &tile.pixels[tile_row..tile_row+tile.length];
+    pub fn from_path(path: String) -> Result<Self, ImageError> {
+        let file = match File::open(path) {
+            Ok(f) => f,
+            Err(e) => return Err(ImageError::FileIO(e))
+        };
 
-            let mut pixel_col = col * tile.length;
-            let pixel_row = row * tile.length + i;
+        let mut decoder = Decoder::new(BufReader::new(file));
+        decoder.set_transformations(png::Transformations::ALPHA);
 
-            for val in tile_slice {
-                println!("pixel_col: {:?}", pixel_col);
-                println!("pixel_row: {:?}", pixel_row);
-                self.data[pixel_row][pixel_col] = *val;
-                pixel_col += 1;
-            }
+        let mut reader = match decoder.read_info() {
+            Ok(i) => i,
+            Err(e) => return Err(ImageError::Decoding(e))
+        };
+
+        let mut output = vec![0; reader.output_buffer_size().unwrap()];
+        let info = reader.next_frame(&mut output).unwrap();
+
+        let mut image = Image::new(info.width as usize, info.height as usize);
+
+        let mut index: usize = 0;
+        while index < image.width * image.height {
+            let r = output[index*4 + 0];
+            let g = output[index*4 + 1];
+            let b = output[index*4 + 2];
+            let a = output[index*4 + 3];
+
+            image.place_pixel_index(Pixel::new_rgba(r, g, b, a), index);
+
+            index += 1
         }
-        println!("\n\n\n");
+
+        Ok(image)
     }
 
-    pub fn get_flattened(&self) -> Vec<u8> {
-        let result = self.data.clone();
-
-        result.iter().flatten().map(|x| *x).collect()
+    // if the position isn't in bounds, this fuction is a no-op
+    pub fn place_pixel_xy(&mut self, new_pixel: Pixel, x: usize, y: usize) {
+        if self.is_in_bounds(x, y) {
+            let index = self.xy_to_index(x, y);
+            self.pixels[index] = new_pixel
+        }
     }
 
-    pub fn create_result_file() -> File {
-        let path = format!("{}/result.png", Config::get_config_dir());
-        
-        File::create(Path::new(&path)).unwrap()
+    pub fn place_pixel_index(&mut self, new_pixel: Pixel, index: usize) {
+        self.pixels[index] = new_pixel
+    }
+
+    fn is_in_bounds(&self, x: usize, y: usize) -> bool {
+        x < self.width && y < self.height
+    }
+
+    fn xy_to_index(&self, x: usize, y: usize) -> usize {
+        y * self.width + x
+    }
+
+    fn index_to_xy(&self, index: usize) -> (usize, usize) {
+        (index % self.width, index / self.width)
     }
 }

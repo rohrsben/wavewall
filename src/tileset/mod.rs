@@ -1,14 +1,12 @@
-pub mod tile;
-
 use std::collections::HashMap;
 use std::{env, fs};
 
-use tile::Tile;
+use crate::image::Image;
 
 #[derive(Debug)]
 pub struct Tileset {
     pub names: Vec<String>,
-    pub tiles: HashMap<String, Tile>
+    pub tiles: HashMap<String, Image>
 }
 
 impl Tileset {
@@ -31,14 +29,16 @@ impl Tileset {
 
         let mut tiles = HashMap::new();
 
-        for png in pngs {
-            let value = Tile::from_path(png.1);
+        // for png in pngs {
+        //     let value = Tile::from_path(png.1);
+        //
+        //     // TODO clean this up
+        //     tiles.insert(png.0.strip_suffix(".png").unwrap().to_owned(), value);
+        // }
 
-            // TODO clean this up
-            tiles.insert(png.0.strip_suffix(".png").unwrap().to_owned(), value);
-        }
+        // let names = tiles.keys().map(|key| key.to_owned()).collect();
 
-        let names = tiles.keys().map(|key| key.to_owned()).collect();
+        let names = Vec::new();
 
         Tileset {
             names,

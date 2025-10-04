@@ -1,1 +1,3 @@
 summary of current state: the transform on line 16 got rid of the indexing. this probably means that the storage buffer is going to be 3 times as large, and consequently Image.data will have to grow 3x as well?then handle that in place_tile too. maybe an Image::place_pixel? maybe a pixel struct? would require more flattening/transforming to feed into the writer though
+
+consider using Transformations::ALPHA instead of EXPAND
