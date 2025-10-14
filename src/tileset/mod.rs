@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::{env, fs};
 
 use crate::image::Image;
+use crate::config::Config;
 
 #[derive(Debug)]
 pub struct Tileset {
@@ -46,18 +47,9 @@ impl Tileset {
         }
     }
 
-    fn config_dir() -> String {
-        if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
-            format!("{xdg}/wavewall")
-        } else {
-            let user = env::var("USER").unwrap();
-            format!("/home/{user}/.config/wavewall")
-        }
-    }
-
     // TODO this should probably return a Result
     pub fn get_tileset_dirs() -> Vec<(String, String)> {
-        let conf = Self::config_dir(); // temp hack
+        let conf = Config::get_config_dir(); // temp hack
 
         let conf_iter = match fs::read_dir(conf) {
             Ok(dir_iter) => dir_iter,

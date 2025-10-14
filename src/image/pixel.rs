@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Pixel {
     r: u8,
     g: u8,
@@ -43,5 +43,9 @@ impl Pixel {
 
     pub fn set_a(&mut self, new_a: u8) {
         self.a = new_a
+    }
+
+    pub fn as_vec(&self) -> Vec<u8> {
+        vec![self.r, self.g, self.b, self.a]
     }
 }
