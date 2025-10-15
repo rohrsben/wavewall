@@ -49,7 +49,7 @@ impl Tileset {
 
     // TODO this should probably return a Result
     pub fn get_tileset_dirs() -> Vec<(String, String)> {
-        let conf = Config::get_config_dir(); // temp hack
+        let conf = Config::config_dir(); // temp hack
 
         let conf_iter = match fs::read_dir(conf) {
             Ok(dir_iter) => dir_iter,

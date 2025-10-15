@@ -1,39 +1,27 @@
-use std::fs::File;
-use std::io::BufWriter;
+use std::fs;
 
-use libwavewall::config::Config;
-use libwavewall::image::Image;
-use png::Encoder;
+use mlua::Lua;
 
-fn img(title: &str) -> Image {
-    Image::from_path(format!("{}/testing/{}.png", Config::get_config_dir(), title)).unwrap()
-}
+use libwavewall::parse;
+use libwavewall::config;
 
 fn main() {
-    let cross = img("cross");
-    let corner = img("corner");
-    let jump = img("jump");
+    let lua = Lua::new();
 
-    let mut result = Image::new(cross.width*3, cross.height*2);
+    let conf = fs::read_to_string(config::config_file()).unwrap();
+    let res = lua.load(conf);
 
-    result.overlay_image(&corner, 0, 0);
-    result.overlay_image(&corner, 32, 0);
-    result.overlay_image(&corner, 64, 0);
-    result.overlay_image(&corner, 0, 32);
-    result.overlay_image(&corner, 32, 32);
-    result.overlay_image(&corner, 64, 32);
+    let res2 = res.eval::<mlua::Table>().unwrap();
 
-    let file_path = format!("{}/result.png", Config::get_config_dir());
-    let file = File::create(file_path).unwrap();
+    println!("res2: {:?}", res2);
 
-    let ref mut w = BufWriter::new(file);
+    let res3 = res2.get::<mlua::Table>("output").unwrap();
+    println!("res3: {:?}", res3);
 
-    let mut encoder = Encoder::new(w, result.width as u32, result.height as u32);
-    encoder.set_color(png::ColorType::Rgba);
-    encoder.set_depth(png::BitDepth::Eight);
-
-    let mut writer = encoder.write_header().unwrap();
-
-    let data = result.as_vec();
-    writer.write_image_data(&data).unwrap();
+    let res4 = res3.get::<mlua::Value>("filename").unwrap();
+    match res4 {
+        mlua::Value::String(str) => println!("Got a string: {:?}", str),
+        mlua::Value::Integer(int) => println!("Got an int: {}", int),
+        _ => println!("Got an other: {}", 4)
+    };
 }
