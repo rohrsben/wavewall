@@ -1,5 +1,5 @@
-use crate::config::error::ConfigError;
-use crate::config::parse;
+use crate::error::AppError;
+use crate::parse;
 
 #[derive(Debug)]
 pub enum Output {
@@ -31,22 +31,22 @@ impl Output {
     }
 }
 
-pub fn parse(input: mlua::Value) -> Result<Output, ConfigError> {
+pub fn parse(input: mlua::Value) -> Result<Output, AppError> {
     match input {
         mlua::Value::Nil => Ok(Output::Nil),
         mlua::Value::Table(contents) => {
             let filename = match contents.get::<mlua::Value>("filename") {
                 Ok(result) => parse::string(result, "output.filename")?,
-                Err(e) => return Err(ConfigError::GeneralMlua(e))
+                Err(e) => return Err(AppError::ConfigLua(e))
             };
 
             let directory = match contents.get::<mlua::Value>("directory") {
                 Ok(result) => parse::string(result, "output.directory")?,
-                Err(e) => return Err(ConfigError::GeneralMlua(e))
+                Err(e) => return Err(AppError::ConfigLua(e))
             };
 
             Ok(Output::Table { filename, directory })
         }
-        _ => Err(ConfigError::Type("output", "nil, table", input.type_name().to_string()))
+        _ => Err(AppError::ConfigType("output", "nil, table", input.type_name().to_string()))
     }
 }

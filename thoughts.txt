@@ -1,3 +1,7 @@
-summary of current state: the transform on line 16 got rid of the indexing. this probably means that the storage buffer is going to be 3 times as large, and consequently Image.data will have to grow 3x as well?then handle that in place_tile too. maybe an Image::place_pixel? maybe a pixel struct? would require more flattening/transforming to feed into the writer though
-
-consider using Transformations::ALPHA instead of EXPAND
+- without changing the cwd, requires arent going to work in tileset configs.
+    - fixing this would probably require threads?
+        1. change cwd for whole program in parsing the tileset -> if the program switches dirs later,
+           requires located inside, for instance, a func that hasn't run yet would probably break
+        2. spawning a thread (for each tset??) -> communicating... probably more difficult?
+           would need to check how send works at min, maybe sync
+    - for now, just let it be single file

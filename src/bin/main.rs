@@ -1,15 +1,13 @@
-use std::env::set_current_dir;
+use std::{env::set_current_dir, process};
 
-use libwavewall::config;
+use libwavewall::{tileset, config};
 
 fn main() {
     // TODO make dir if nonexistent? populate with default config?
-    let _ = set_current_dir(config::config_dir());
+    if let Err(e) = set_current_dir(config::config_dir()) {
+        println!("Failed to open configuration directory {}:\n{}", config::config_dir(), e);
+        process::exit(1)
+    }
 
-    let config = config::parse();
-
-    match config {
-        Ok(conf) => println!("{}", conf.output.filepath()),
-        Err(e) => println!("{}", e),
-    };
+    let (_, _) = tileset::parse_images(String::from("testing")).unwrap();
 }

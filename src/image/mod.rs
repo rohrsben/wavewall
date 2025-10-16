@@ -1,17 +1,13 @@
 pub mod pixel;
 
-use std::{fs::File};
+use std::fs::File;
 use std::io::BufReader;
+use std::path::Path;
 
-use png::{Decoder, DecodingError};
+use png::Decoder;
 
-use crate::image::pixel::Pixel;
-
-#[derive(Debug)]
-pub enum ImageError {
-    FileIO(std::io::Error),
-    Decoding(DecodingError)
-}
+use crate::error::AppError;
+use pixel::Pixel;
 
 #[derive(Debug)]
 pub struct Image {
@@ -31,10 +27,10 @@ impl Image {
         }
     }
 
-    pub fn from_path(path: String) -> Result<Self, ImageError> {
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, AppError> {
         let file = match File::open(path) {
             Ok(f) => f,
-            Err(e) => return Err(ImageError::FileIO(e))
+            Err(e) => return Err(AppError::IO(e))
         };
 
         let mut decoder = Decoder::new(BufReader::new(file));
@@ -42,7 +38,7 @@ impl Image {
 
         let mut reader = match decoder.read_info() {
             Ok(i) => i,
-            Err(e) => return Err(ImageError::Decoding(e))
+            Err(e) => return Err(AppError::ImageDecode(e))
         };
 
         let mut output = vec![0; reader.output_buffer_size().unwrap()];

@@ -1,12 +1,10 @@
-pub mod error;
-pub mod parse;
 pub mod output;
 
 use std::{env, fs};
 
 use mlua::{Lua};
 
-use error::ConfigError;
+use crate::error::AppError;
 
 #[derive(Debug)]
 pub struct Config {
@@ -14,22 +12,22 @@ pub struct Config {
     pub output: output::Output,
 }
 
-pub fn parse() -> Result<Config, ConfigError> {
+pub fn parse() -> Result<Config, AppError> {
     let lua = Lua::new();
 
-    let config = match fs::read_to_string(config_file()) {
+    let config = match fs::read_to_string("wavewall.lua") {
         Ok(contents) => lua.load(contents).set_name("@wavewall.lua"),
-        Err(e) => return Err(ConfigError::Read(e))
+        Err(e) => return Err(AppError::IO(e))
     };
 
     let config = match config.eval::<mlua::Table>() {
         Ok(result) => result,
-        Err(e) => return Err(ConfigError::GeneralMlua(e))
+        Err(e) => return Err(AppError::ConfigLua(e))
     };
 
-    let output= match config.get::<mlua::Value>("output") {
+    let output = match config.get::<mlua::Value>("output") {
         Ok(result) => output::parse(result)?,
-        Err(e) => return Err(ConfigError::GeneralMlua(e))
+        Err(e) => return Err(AppError::ConfigLua(e))
     };
 
     Ok(Config {
@@ -45,8 +43,4 @@ pub fn config_dir() -> String {
         let user = env::var("USER").unwrap();
         format!("/home/{user}/.config/wavewall")
     }
-}
-
-pub fn config_file() -> String {
-    format!("{}/wavewall.lua", config_dir())
 }
