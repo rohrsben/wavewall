@@ -6,7 +6,7 @@ fn main() {
     // TODO make dir if nonexistent? populate with default config?
     let _ = set_current_dir(config::config_dir());
 
-    let config = config::generate();
+    let config = config::parse();
 
     match config {
         Ok(conf) => println!("{}", conf.output.filepath()),

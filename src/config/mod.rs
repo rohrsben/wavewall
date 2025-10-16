@@ -14,35 +14,28 @@ pub struct Config {
     pub output: output::Output,
 }
 
-pub fn generate() -> Result<Config, ConfigError> {
+pub fn parse() -> Result<Config, ConfigError> {
     let lua = Lua::new();
 
     let config = match fs::read_to_string(config_file()) {
-        Ok(contents) => contents,
+        Ok(contents) => lua.load(contents).set_name("@wavewall.lua"),
         Err(e) => return Err(ConfigError::Read(e))
     };
-
-    let config = lua.load(config);
-    let config = config.set_name("@wavewall.lua");
 
     let config = match config.eval::<mlua::Table>() {
         Ok(result) => result,
         Err(e) => return Err(ConfigError::GeneralMlua(e))
     };
 
-    let output_value = match config.get::<mlua::Value>("output") {
-        Ok(result) => result,
+    let output= match config.get::<mlua::Value>("output") {
+        Ok(result) => output::parse(result)?,
         Err(e) => return Err(ConfigError::GeneralMlua(e))
     };
 
-    let output = output::parse(output_value)?;
-
-    let config = Config {
+    Ok(Config {
         lua,
         output
-    };
-
-    Ok(config)
+    })
 }
 
 pub fn config_dir() -> String {
