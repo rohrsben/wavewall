@@ -5,3 +5,5 @@
         2. spawning a thread (for each tset??) -> communicating... probably more difficult?
            would need to check how send works at min, maybe sync
     - for now, just let it be single file
+
+- it would be useful to have some stuff be determined via lua, but stay determined afterwards. perhaps add some fields to Tileset which would only be set after like a Tileset.setup() call? Or perhaps a new type with those fields added? for instance setup() would determine the selected recipe, and then permanently add it to a field in the new/altered Tileset, so that the function call (and associated validation) would only be performed once

@@ -11,6 +11,9 @@ pub enum AppError {
     #[error("Item with incorrect type in list {0}:\n  Expected: {1}\n  Got: {2}")]
     ConfigTypeListItemSpecific(String, &'static str, String),
 
+    #[error("{0}")]
+    Runtime(String),
+
     #[error("Error decoding image: {0}")]
     ImageDecode(#[from] png::DecodingError),
 

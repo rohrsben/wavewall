@@ -12,7 +12,13 @@ fn main() {
     let res = tileset::parse("testing");
 
     match res {
-        Ok(some) => println!("some: {:?}", some),
+        Ok(some) => {
+            let res = some.config.selected_recipe();
+            match res {
+                Ok(recipe) => println!("recipe: {:?}", recipe),
+                Err(e) => println!("Got error: {}", e),
+            }
+        }
         Err(e) => println!("Got error: {}", e),
     }
 }
