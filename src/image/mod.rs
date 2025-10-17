@@ -2,7 +2,6 @@ pub mod pixel;
 
 use std::fs::File;
 use std::io::BufReader;
-use std::path::Path;
 
 use png::Decoder;
 
@@ -27,7 +26,7 @@ impl Image {
         }
     }
 
-    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, AppError> {
+    pub fn from_path(path: &str) -> Result<Self, AppError> {
         let file = match File::open(path) {
             Ok(f) => f,
             Err(e) => return Err(AppError::IO(e))

@@ -1,18 +1,28 @@
 pub mod recipe;
 
-use crate::error::AppError;
+use std::collections::HashMap;
 
-use recipe::Recipe;
+use crate::{error::AppError, parse};
 
 #[derive(Debug)]
 pub struct TilesetConfig {
     selection: Option<String>,
-    recipes: Vec<Recipe>
+    recipes: HashMap<String, recipe::Recipe>
 }
 
-pub fn parse(_input: mlua::Table) -> Result<TilesetConfig, AppError> {
-    todo!()
-    // figure out how to determine the number/names of the recipes
+pub fn parse(input: mlua::Table) -> Result<TilesetConfig, AppError> {
+    let selection = match input.get::<mlua::Value>("selection") {
+        Ok(result) => parse::string(result, "tileset.selection")?,
+        Err(e) => return Err(AppError::ConfigLua(e))
+    };
 
-    // parse them and add to a vec
+    let recipes = match input.get::<mlua::Value>("recipes") {
+        Ok(result) => recipe::parse(result)?,
+        Err(e) => return Err(AppError::ConfigLua(e))
+    };
+
+    Ok(TilesetConfig {
+        selection,
+        recipes
+    })
 }

@@ -9,5 +9,10 @@ fn main() {
         process::exit(1)
     }
 
-    let (_, _) = tileset::parse_images(String::from("testing")).unwrap();
+    let res = tileset::parse("testing");
+
+    match res {
+        Ok(some) => println!("some: {:?}", some),
+        Err(e) => println!("Got error: {}", e),
+    }
 }

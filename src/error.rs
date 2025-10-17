@@ -6,6 +6,10 @@ pub enum AppError {
     ConfigLua(#[from] mlua::Error),
     #[error("Incorrect type for '{0}'\n  Expected: {1}\n  Got: {2}")]
     ConfigType(&'static str, &'static str, String),
+    #[error("Incorrect type for '{0}'\n  Expected: {1}\n  Got: {2}")]
+    ConfigTypeSpecific(String, &'static str, String),
+    #[error("Item with incorrect type in list {0}:\n  Expected: {1}\n  Got: {2}")]
+    ConfigTypeListItemSpecific(String, &'static str, String),
 
     #[error("Error decoding image: {0}")]
     ImageDecode(#[from] png::DecodingError),

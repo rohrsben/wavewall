@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use crate::{error::AppError, image::Image};
 
 #[derive(Debug)]
@@ -8,7 +6,7 @@ pub struct Tile {
 }
 
 impl Tile {
-    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, AppError> {
+    pub fn from_path(path: &str) -> Result<Self, AppError> {
         let image = Image::from_path(path)?;
 
         Ok(Tile {

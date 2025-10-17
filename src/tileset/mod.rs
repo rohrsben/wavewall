@@ -20,7 +20,7 @@ pub struct Tileset {
     pub tiles: HashMap<String, Tile>
 }
 
-pub fn parse(tileset: String) -> Result<Tileset, AppError> {
+pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
     let lua = Lua::new();
 
     let config_file = format!("{tileset}/tileset.lua");
@@ -44,7 +44,7 @@ pub fn parse(tileset: String) -> Result<Tileset, AppError> {
     })
 }
 
-pub fn parse_images(tileset: String) -> Result<(Vec<String>, HashMap<String, Tile>), AppError> {
+fn parse_images(tileset: &str) -> Result<(Vec<String>, HashMap<String, Tile>), AppError> {
     let mut names = Vec::new();
     let mut tiles = HashMap::new();
 
@@ -69,11 +69,12 @@ pub fn parse_images(tileset: String) -> Result<(Vec<String>, HashMap<String, Til
         let file = file?;
         if is_png(&file) {
             let name = normalize_name(&file);
-            let tile = Tile::from_path(file.path())?;
+
+            let path = file.path().to_string_lossy().to_string();
+            let tile = Tile::from_path(&path)?;
 
             tiles.insert(name.clone(), tile);
             names.push(name);
-
         }
     }
 
