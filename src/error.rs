@@ -16,7 +16,9 @@ pub enum AppError {
 
     #[error("Error decoding image: {0}")]
     ImageDecode(#[from] png::DecodingError),
+    #[error("Error encoding image: {0}")]
+    ImageEncode(#[from] png::EncodingError),
 
-    #[error("Failed to open file: {0}")]
+    #[error("IO Error: {0}")]
     IO(#[from] std::io::Error),
 }

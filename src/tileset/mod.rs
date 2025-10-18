@@ -6,10 +6,12 @@ use std::fs::{self, DirEntry};
 
 use mlua::Lua;
 use infer;
+use rand::seq::{IteratorRandom, IndexedRandom};
 
 use crate::error::AppError;
 
 use tsconfig::TilesetConfig;
+use tsconfig::recipes::tiles::Tiles;
 use tile::Tile;
 
 #[derive(Debug)]
@@ -20,7 +22,40 @@ pub struct Tileset {
     pub tiles: HashMap<String, Tile>
 }
 
+impl Tileset {
+    pub fn get_tile(&self) -> Result<&Tile, AppError> {
+        let recipe = self.config.selected_recipe()?;
+        let choice = match &recipe.tiles {
+            Tiles::List(options) => {
+                match options.choose(&mut rand::rng()) {
+                    Some(choice) => choice,
+                    None => {
+                        let msg = format!("No tiles found. Did you set 'tiles' in the recipe but forget to populate it?");
+                        return Err(AppError::Runtime(msg));
+                    }
+                }
+            }
+            Tiles::Nil => {
+                let names = self.tiles.keys();
+                match names.choose(&mut rand::rng()) {
+                    Some(choice) => choice,
+                    None => {
+                        let msg = format!("No tiles found.");
+                        return Err(AppError::Runtime(msg));
+                    }
+                }
+            }
+        };
 
+        match self.tiles.get(choice) {
+            Some(result) => Ok(result),
+            None => {
+                let msg = format!("Found no tile with the name: {}", choice);
+                return Err(AppError::Runtime(msg));
+            }
+        }
+    }
+}
 
 pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
     let lua = Lua::new();

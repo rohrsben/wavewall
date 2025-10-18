@@ -1,6 +1,6 @@
 use std::{env::set_current_dir, process};
 
-use libwavewall::{tileset, config};
+use libwavewall::{config, image::Image, tileset};
 
 fn main() {
     // TODO make dir if nonexistent? populate with default config?
@@ -9,16 +9,18 @@ fn main() {
         process::exit(1)
     }
 
-    let res = tileset::parse("testing");
+    let tileset = tileset::parse("testing").unwrap();
+    let config = config::parse().unwrap();
 
-    match res {
-        Ok(some) => {
-            let res = some.config.selected_recipe();
-            match res {
-                Ok(recipe) => println!("recipe: {:?}", recipe),
-                Err(e) => println!("Got error: {}", e),
-            }
-        }
-        Err(e) => println!("Got error: {}", e),
+    let mut result = Image::new(900, 900);
+    while result.next_free_xy() != None {
+        let (x, y) = result.next_free_xy().unwrap();
+        let tile = tileset.get_tile().unwrap();
+        result.overlay_image(&tile.image, x, y);
     }
+
+
+    let path = config.output.filepath();
+    println!("Saving to: {}", path);
+    result.save(&path);
 }

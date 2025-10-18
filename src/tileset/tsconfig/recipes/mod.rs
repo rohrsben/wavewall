@@ -6,7 +6,7 @@ use crate::error::AppError;
 
 #[derive(Debug)]
 pub struct Recipe {
-    tiles: tiles::Tiles,
+    pub tiles: tiles::Tiles,
 }
 
 pub fn parse(input: mlua::Value) -> Result<HashMap<String, Recipe>, AppError> {

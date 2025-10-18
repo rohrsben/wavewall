@@ -31,7 +31,7 @@ impl TilesetConfig {
             None => {
                 // TODO check for no recipes when parsing the tsconfig?
                 let msg = format!("No recipes found.");
-                return Err(AppError::Runtime(msg))
+                return Err(AppError::Runtime(msg));
             }
         }
     }

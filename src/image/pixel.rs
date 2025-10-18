@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Pixel {
     r: u8,
     g: u8,
@@ -9,10 +9,10 @@ pub struct Pixel {
 impl Pixel {
     pub fn new() -> Self {
         Pixel {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 0xff
+            r: 1,
+            g: 1,
+            b: 1,
+            a: 2
         }
     }
 
@@ -24,9 +24,7 @@ impl Pixel {
     }
 
     pub fn new_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
-        Pixel {
-            r, g, b, a
-        }
+        Pixel { r, g, b, a }
     }
 
     pub fn set_r(&mut self, new_r: u8) {

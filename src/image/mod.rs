@@ -1,9 +1,9 @@
 pub mod pixel;
 
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 
-use png::Decoder;
+use png::{Decoder, Encoder};
 
 use crate::error::AppError;
 use pixel::Pixel;
@@ -27,21 +27,16 @@ impl Image {
     }
 
     pub fn from_path(path: &str) -> Result<Self, AppError> {
-        let file = match File::open(path) {
-            Ok(f) => f,
-            Err(e) => return Err(AppError::IO(e))
-        };
+        let file = File::open(path)?;
 
         let mut decoder = Decoder::new(BufReader::new(file));
         decoder.set_transformations(png::Transformations::ALPHA);
 
-        let mut reader = match decoder.read_info() {
-            Ok(i) => i,
-            Err(e) => return Err(AppError::ImageDecode(e))
-        };
+        let mut reader = decoder.read_info()?;
 
+        // the unwrap here is so unlikely to fail, and so problematic if it does, that its fine
         let mut output = vec![0; reader.output_buffer_size().unwrap()];
-        let info = reader.next_frame(&mut output).unwrap();
+        let info = reader.next_frame(&mut output)?;
 
         let mut image = Image::new(info.width as usize, info.height as usize);
         let num_pixels = image.width * image.height;
@@ -61,6 +56,20 @@ impl Image {
         Ok(image)
     }
 
+    pub fn save(&self, path: &str) -> Result<(), AppError> {
+        let save_file = File::create(path)?;
+        let ref mut w = BufWriter::new(save_file);
+        let mut encoder = Encoder::new(w, self.width as u32, self.height as u32);
+        encoder.set_color(png::ColorType::Rgba);
+        encoder.set_depth(png::BitDepth::Eight);
+        let mut writer = encoder.write_header()?;
+        
+        let data = self.as_vec();
+        writer.write_image_data(&data)?;
+
+        Ok(())
+    }
+
     pub fn as_vec(&self) -> Vec<u8> {
         self.pixels.iter()
             .map(|pixel| pixel.as_vec())
@@ -69,6 +78,7 @@ impl Image {
     }
 
     // (x, y) denotes where the top left of the overlay will be placed on the base image
+    // TODO this actually needs to take isize's, and all knock-on effects
     pub fn overlay_image(&mut self, overlay: &Self, start_x: usize, start_y: usize) {
         for overlay_y in 0..overlay.height {
             for overlay_x in 0..overlay.width {
@@ -88,6 +98,18 @@ impl Image {
             let index = self.xy_to_index(x, y);
             self.pixels[index] = new_pixel
         }
+    }
+
+    pub fn next_free_xy(&self) -> Option<(usize, usize)> {
+        let reference = Pixel::new();
+
+        for (index, pixel) in self.pixels.iter().enumerate() {
+            if reference == *pixel {
+                return Some(self.index_to_xy(index));
+            }
+        }
+
+        None
     }
 
     pub fn pixel_at(&self, x: usize, y: usize) -> Option<Pixel> {

@@ -2,7 +2,7 @@ use crate::{error::AppError, image::Image};
 
 #[derive(Debug)]
 pub struct Tile {
-    image: Image,
+    pub image: Image,
 }
 
 impl Tile {
