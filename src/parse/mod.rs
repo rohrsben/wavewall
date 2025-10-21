@@ -8,4 +8,9 @@ pub fn string(input: mlua::Value, location: &'static str) -> Result<Option<Strin
     }
 }
 
-
+pub fn int_definite(input: mlua::Value, location: &'static str) -> Result<i64, AppError> {
+    match input {
+        mlua::Value::Integer(int) => Ok(int),
+        _ => Err(AppError::ConfigType(location, "integer", input.type_name().to_string()))
+    }
+}
