@@ -30,12 +30,12 @@ pub fn parse(input: mlua::Value) -> Result<Output, AppError> {
     match input {
         mlua::Value::Table(contents) => {
             let filename = match contents.get::<mlua::Value>("filename") {
-                Ok(result) => parse::string(result, "wavewall.output.filename")?,
+                Ok(result) => parse::string(result, "wavewall.output.filename".to_string())?,
                 Err(e) => return Err(AppError::ConfigLua(e))
             };
 
             let directory = match contents.get::<mlua::Value>("directory") {
-                Ok(result) => parse::string(result, "wavewall.output.directory")?,
+                Ok(result) => parse::string(result, "wavewall.output.directory".to_string())?,
                 Err(e) => return Err(AppError::ConfigLua(e))
             };
 
@@ -50,6 +50,6 @@ pub fn parse(input: mlua::Value) -> Result<Output, AppError> {
                 size,
             })
         }
-        _ => Err(AppError::ConfigType("wavewall.output", "nil, table", input.type_name().to_string()))
+        _ => Err(AppError::ConfigType("wavewall.output".to_string(), "nil, table", input.type_name().to_string()))
     }
 }

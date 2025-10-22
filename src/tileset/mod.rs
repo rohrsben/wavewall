@@ -67,9 +67,15 @@ impl Tileset {
             }
         };
 
+        let tile_width = config.info.size.width;
+
+        let tile_height = config.info.size.height;
+
         Ok(TilesetRuntime {
             lua,
             tiles: selected_tiles,
+            tile_width,
+            tile_height
         })
     }
 }
@@ -112,7 +118,7 @@ pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
     };
 
     let config = match config.eval::<mlua::Table>() {
-        Ok(result) => tsconfig::parse(result)?,
+        Ok(result) => tsconfig::parse(result, tileset)?,
         Err(e) => return Err(AppError::ConfigLua(e))
     };
 

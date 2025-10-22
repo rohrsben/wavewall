@@ -1,5 +1,6 @@
 pub mod pixel;
 
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
@@ -13,16 +14,19 @@ pub struct Image {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<Pixel>,
+    pub placement_points: VecDeque<(isize, isize)>
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
-        let data: Vec<Pixel> = vec![Pixel::new(); width * height];
+        let pixels = vec![Pixel::new(); width * height];
+        let placement_points = VecDeque::new();
 
         Self {
             width,
             height,
-            pixels: data
+            pixels,
+            placement_points
         }
     }
 
@@ -70,6 +74,28 @@ impl Image {
         Ok(())
     }
 
+    pub fn generate_placement_points(&mut self, x_offset: usize, y_offset: usize, tile_width: usize, tile_height: usize) {
+        let mut x_coords = Vec::new();
+        let mut current_x = -1 * x_offset as isize;
+        while current_x < self.width.try_into().unwrap() {
+            x_coords.push(current_x);
+            current_x += tile_width as isize;
+        }
+
+        let mut y_coords = Vec::new();
+        let mut current_y = -1 * y_offset as isize;
+        while current_y < self.height.try_into().unwrap() {
+            y_coords.push(current_y);
+            current_y += tile_height as isize;
+        }
+
+        for y in y_coords {
+            for x in &x_coords {
+                self.placement_points.push_back((*x, y));
+            }
+        }
+    }
+
     pub fn as_vec(&self) -> Vec<u8> {
         self.pixels.iter()
             .map(|pixel| pixel.as_vec())
@@ -79,14 +105,16 @@ impl Image {
 
     // (x, y) denotes where the top left of the overlay will be placed on the base image
     // TODO this actually needs to take isize's, and all knock-on effects
-    pub fn overlay_image(&mut self, overlay: &Self, start_x: usize, start_y: usize) {
+    pub fn overlay_image(&mut self, overlay: &Self, start_x: isize, start_y: isize) {
         for overlay_y in 0..overlay.height {
             for overlay_x in 0..overlay.width {
-                let x = overlay_x + start_x;
-                let y = overlay_y + start_y;
+                let x = overlay_x as isize + start_x;
+                let y = overlay_y as isize + start_y;
 
-                if let Some(new_pixel) = overlay.pixel_at(overlay_x, overlay_y) {
-                    self.place_pixel_xy(new_pixel, x, y);
+                if x >= 0 && y >= 0 {
+                    if let Some(new_pixel) = overlay.pixel_at(overlay_x, overlay_y) {
+                        self.place_pixel_xy(new_pixel, x as usize, y as usize);
+                    }
                 }
             }
         }

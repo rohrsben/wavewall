@@ -7,7 +7,9 @@ use crate::tileset::tile::Tile;
 #[derive(Debug)]
 pub struct TilesetRuntime {
     pub lua: mlua::Lua,
-    pub tiles: HashMap<String, Tile>
+    pub tiles: HashMap<String, Tile>,
+    pub tile_width: usize,
+    pub tile_height: usize,
 }
 
 impl TilesetRuntime {

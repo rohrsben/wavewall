@@ -1,17 +1,17 @@
 pub mod output;
+pub mod generation;
 
 use std::{env, fs};
 
 use mlua::{Lua};
 
 use crate::error::AppError;
-use crate::parse;
 
 #[derive(Debug)]
 pub struct Config {
     lua: Lua,
     pub output: output::Output,
-    pub tileset: Option<String>,
+    pub generation: generation::Generation,
 }
 
 pub fn parse() -> Result<Config, AppError> {
@@ -32,15 +32,15 @@ pub fn parse() -> Result<Config, AppError> {
         Err(e) => return Err(AppError::ConfigLua(e))
     };
 
-    let tileset = match config.get::<mlua::Value>("tileset") {
-        Ok(result) => parse::string(result, "wavewall.tileset")?,
+    let generation = match config.get::<mlua::Value>("generation") {
+        Ok(result) => generation::parse(result)?,
         Err(e) => return Err(AppError::ConfigLua(e))
     };
 
     Ok(Config {
         lua,
         output,
-        tileset
+        generation
     })
 }
 
