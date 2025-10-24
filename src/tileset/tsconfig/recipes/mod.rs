@@ -24,28 +24,30 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<HashMap<String, Recipe
 
             Ok(recipes)
         }
-        _ => {
-            let location = format!("{tileset}.recipes");
-            Err(AppError::ConfigType(location, "table", input.type_name().to_string()))
-        }
+        _ => Err(AppError::ConfigType(
+            format!("{tileset}.recipes"),
+            "table",
+            input.type_name().to_string()
+        ))
     }
 }
 
 fn parse_recipe(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Recipe, AppError> {
     match input {
         mlua::Value::Table(contents) => {
-            let tiles = match contents.get::<mlua::Value>("tiles") {
-                Ok(result) => tiles::parse(result, tileset, recipe)?,
-                Err(e) => return Err(AppError::ConfigLua(e))
-            };
+            let tiles = tiles::parse(
+                contents.get::<mlua::Value>("tiles")?,
+                tileset, recipe
+            )?;
 
             Ok(Recipe {
                 tiles,
             })
         }
-        _ => {
-            let location = format!("{tileset}.recipes.{recipe}");
-            Err(AppError::ConfigType(location, "table", input.type_name().to_string()))
-        }
+        _ => Err(AppError::ConfigType(
+            format!("{tileset}.recipes.{recipe}"),
+            "table",
+            input.type_name().to_string()
+        ))
     }
 }

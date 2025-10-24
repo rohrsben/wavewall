@@ -13,23 +13,20 @@ pub struct TilesetConfig {
 }
 
 pub fn parse(input: mlua::Table, tileset: &str) -> Result<TilesetConfig, AppError> {
-    let info = match input.get::<mlua::Value>("info") {
-        Ok(result) => info::parse(result, tileset)?,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let info = info::parse(
+        input.get::<mlua::Value>("info")?,
+        tileset
+    )?;
 
-    let selection = match input.get::<mlua::Value>("selection") {
-        Ok(result) => {
-            let location = format!("{tileset}.selection");
-            parse::string(result, location)?
-        }
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let selection = parse::string(
+        input.get::<mlua::Value>("selection")?,
+        format!("{tileset}.selection")
+    )?;
 
-    let recipes = match input.get::<mlua::Value>("recipes") {
-        Ok(result) => recipes::parse(result, tileset)?,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let recipes = recipes::parse(
+        input.get::<mlua::Value>("recipes")?,
+        tileset
+    )?;
 
     Ok(TilesetConfig {
         info,

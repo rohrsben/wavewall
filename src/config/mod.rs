@@ -17,25 +17,18 @@ pub struct Config {
 pub fn parse() -> Result<Config, AppError> {
     let lua = Lua::new();
 
-    let config = match fs::read_to_string("wavewall.lua") {
-        Ok(contents) => lua.load(contents).set_name("@wavewall.lua"),
-        Err(e) => return Err(AppError::IO(e))
-    };
+    let config = fs::read_to_string("wavewall.lua")?;
+    let config = lua.load(config)
+        .set_name("@wavewall.lua")
+        .eval::<mlua::Table>()?;
 
-    let config = match config.eval::<mlua::Table>() {
-        Ok(result) => result,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let output = output::parse(
+        config.get::<mlua::Value>("output")?
+    )?;
 
-    let output = match config.get::<mlua::Value>("output") {
-        Ok(result) => output::parse(result)?,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
-
-    let generation = match config.get::<mlua::Value>("generation") {
-        Ok(result) => generation::parse(result)?,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let generation = generation::parse(
+        config.get::<mlua::Value>("generation")?
+    )?;
 
     Ok(Config {
         lua,

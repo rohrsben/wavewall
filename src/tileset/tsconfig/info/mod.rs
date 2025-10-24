@@ -10,18 +10,19 @@ pub struct Info {
 pub fn parse(input: mlua::Value, tileset: &str) -> Result<Info, AppError> {
     match input {
         mlua::Value::Table(contents) => {
-            let size = match contents.get::<mlua::Value>("size") {
-                Ok(result) => size::parse(result, tileset)?,
-                Err(e) => return Err(AppError::ConfigLua(e))
-            };
+            let size = size::parse(
+                contents.get::<mlua::Value>("size")?,
+                tileset
+            )?;
 
             Ok(Info {
                 size
             })
         }
-        _ => {
-            let location = format!("{tileset}.info");
-            Err(AppError::ConfigType(location, "table", input.type_name().to_string()))
-        }
+        _ => Err(AppError::ConfigType(
+            format!("{tileset}.info"),
+            "table",
+            input.type_name().to_string()
+        ))
     }
 }

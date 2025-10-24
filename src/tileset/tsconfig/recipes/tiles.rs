@@ -17,18 +17,20 @@ pub fn parse(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Tiles, A
                 let item = item?;
                 match item {
                     mlua::Value::String(str) => tile_names.push(str.to_string_lossy()),
-                    _ => {
-                        let location = format!("{tileset}.recipes.{recipe}.tiles");
-                        return Err(AppError::ConfigTypeListItem(location, "string", item.type_name().to_string()))
-                    }
+                    _ => return Err(AppError::ConfigTypeListItem(
+                        format!("{tileset}.recipes.{recipe}.tiles"),
+                        "string",
+                        item.type_name().to_string()
+                    ))
                 }
             }
 
             Ok(Tiles::List(tile_names))
         }
-        _ => {
-            let location = format!("{tileset}.recipes.{recipe}.tiles");
-            Err(AppError::ConfigType(location, "nil, list of string", input.type_name().to_string()))
-        }
+        _ => Err(AppError::ConfigType(
+            format!("{tileset}.recipes.{recipe}.tiles"), 
+            "nil, list of string",
+            input.type_name().to_string()
+        ))
     }
 }

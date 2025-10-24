@@ -16,21 +16,23 @@ pub fn parse(input: mlua::Value) -> Result<Generation, AppError> {
             offset: offset::default()
         }),
         mlua::Value::Table(contents) => {
-            let tileset = match contents.get::<mlua::Value>("tileset") {
-                Ok(result) => tileset::parse(result)?,
-                Err(e) => return Err(AppError::ConfigLua(e))
-            };
+            let tileset = tileset::parse(
+                contents.get::<mlua::Value>("tileset")?
+            )?;
 
-            let offset = match contents.get::<mlua::Value>("offset") {
-                Ok(result) => offset::parse(result)?,
-                Err(e) => return Err(AppError::ConfigLua(e))
-            };
+            let offset = offset::parse(
+                contents.get::<mlua::Value>("offset")?
+            )?;
 
             Ok(Generation {
                 tileset,
                 offset
             })
         }
-        _ => Err(AppError::ConfigType("wavewall.generation".to_string(), "nil, table", input.type_name().to_string()))
+        _ => Err(AppError::ConfigType(
+            "wavewall.generation".to_string(),
+            "nil, table",
+            input.type_name().to_string()
+        ))
     }
 }
