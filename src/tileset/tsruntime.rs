@@ -10,6 +10,7 @@ pub struct TilesetRuntime {
     pub tiles: HashMap<String, Tile>,
     pub tile_width: usize,
     pub tile_height: usize,
+    pub colorizer: Option<mlua::Function>,
 }
 
 impl TilesetRuntime {

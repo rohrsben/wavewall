@@ -1,25 +1,25 @@
-pub mod pixel;
+pub mod pixel_info;
 
 use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
 use png::{Decoder, Encoder};
+use hex_color::HexColor;
 
 use crate::error::AppError;
-use pixel::Pixel;
 
 #[derive(Debug)]
 pub struct Image {
     pub width: usize,
     pub height: usize,
-    pub pixels: Vec<Pixel>,
+    pub pixels: Vec<HexColor>,
     pub placement_points: VecDeque<(isize, isize)>
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
-        let pixels = vec![Pixel::new(); width * height];
+        let pixels = vec![HexColor::BLACK; width * height];
         let placement_points = VecDeque::new();
 
         Self {
@@ -52,7 +52,7 @@ impl Image {
             let b = output[index*4 + 2];
             let a = output[index*4 + 3];
 
-            image.place_pixel_index(Pixel::new_rgba(r, g, b, a), index);
+            image.place_pixel_index(HexColor::rgba(r, g, b, a), index);
 
             index += 1
         }
@@ -98,7 +98,7 @@ impl Image {
 
     pub fn as_vec(&self) -> Vec<u8> {
         self.pixels.iter()
-            .map(|pixel| pixel.as_vec())
+            .map(|pixel| vec![pixel.r, pixel.g, pixel.b, pixel.a])
             .flatten()
             .collect()
     }
@@ -121,26 +121,14 @@ impl Image {
     }
 
     // if the position isn't in bounds, this fuction is a no-op
-    pub fn place_pixel_xy(&mut self, new_pixel: Pixel, x: usize, y: usize) {
+    pub fn place_pixel_xy(&mut self, new_pixel: HexColor, x: usize, y: usize) {
         if self.is_in_bounds(x, y) {
             let index = self.xy_to_index(x, y);
             self.pixels[index] = new_pixel
         }
     }
 
-    pub fn next_free_xy(&self) -> Option<(usize, usize)> {
-        let reference = Pixel::new();
-
-        for (index, pixel) in self.pixels.iter().enumerate() {
-            if reference == *pixel {
-                return Some(self.index_to_xy(index));
-            }
-        }
-
-        None
-    }
-
-    pub fn pixel_at(&self, x: usize, y: usize) -> Option<Pixel> {
+    pub fn pixel_at(&self, x: usize, y: usize) -> Option<HexColor> {
         if self.is_in_bounds(x, y) {
             let index = self.xy_to_index(x, y);
             return Some(self.pixels[index]);
@@ -149,7 +137,7 @@ impl Image {
         None
     }
 
-    pub fn place_pixel_index(&mut self, new_pixel: Pixel, index: usize) {
+    pub fn place_pixel_index(&mut self, new_pixel: HexColor, index: usize) {
         self.pixels[index] = new_pixel
     }
 
@@ -161,7 +149,7 @@ impl Image {
         y * self.width + x
     }
 
-    fn index_to_xy(&self, index: usize) -> (usize, usize) {
+    pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
         (index % self.width, index / self.width)
     }
 }

@@ -13,6 +13,7 @@ use crate::error::AppError;
 
 use tsconfig::TilesetConfig;
 use tsconfig::recipes::tiles::Tiles;
+use tsconfig::colorizer::Colorizer;
 use tile::Tile;
 use tsruntime::TilesetRuntime;
 
@@ -71,11 +72,17 @@ impl Tileset {
 
         let tile_height = config.info.size.height;
 
+        let colorizer = match config.colorizer {
+            Colorizer::Nil => None,
+            Colorizer::Function(func) => Some(func)
+        };
+
         Ok(TilesetRuntime {
             lua,
             tiles: selected_tiles,
             tile_width,
-            tile_height
+            tile_height,
+            colorizer
         })
     }
 }
@@ -111,16 +118,12 @@ pub fn parse_all() -> Result<HashMap<String, Tileset>, AppError> {
 pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
     let lua = mlua::Lua::new();
 
-    let config_file = format!("{tileset}/tileset.lua");
-    let config = match fs::read_to_string(config_file) {
-        Ok(contents) => lua.load(contents).set_name("@tileset.lua"),
-        Err(e) => return Err(AppError::IO(e))
-    };
-
-    let config = match config.eval::<mlua::Table>() {
-        Ok(result) => tsconfig::parse(result, tileset)?,
-        Err(e) => return Err(AppError::ConfigLua(e))
-    };
+    let path = format!("{tileset}/tileset.lua");
+    let config = fs::read_to_string(&path)?;
+    let config = lua.load(config)
+        .set_name(format!("@{path}"))
+        .eval::<mlua::Table>()?;
+    let config = tsconfig::parse(config, tileset)?;
 
     let tiles = parse_images(tileset)?;
 
