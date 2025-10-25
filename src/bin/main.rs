@@ -17,17 +17,10 @@ fn main() {
     let config = question_mark(config::parse());
 
     let tileset = match config.generation.tileset {
-        Tileset::String(selection) => question_mark(tileset::parse(&selection)),
+        Tileset::String(selection) => question_mark(tileset::parse(selection)),
         Tileset::List(options) => {
-            let mut tilesets = Vec::new();
-
-            for opt in options {
-                let ts = question_mark(tileset::parse(&opt));
-                tilesets.push(ts);
-            }
-
-            let random_choice = rng.random_range(0..tilesets.len());
-            tilesets.remove(random_choice)
+            let random_choice = options.choose(&mut rng).unwrap().clone();
+            question_mark(tileset::parse(random_choice))
         }
         Tileset::Nil => {
             let mut tilesets = question_mark(tileset::parse_all());
@@ -37,8 +30,8 @@ fn main() {
                 process::exit(1)
             }
 
-            let random_choice = tilesets.keys().choose(&mut rng).unwrap().clone();
-            tilesets.remove(&random_choice).unwrap()
+            let random_choice = rng.random_range(0..tilesets.len());
+            tilesets.remove(random_choice)
         }
     };
 
@@ -47,14 +40,13 @@ fn main() {
     let mut result = Image::new(config.output.size.width, config.output.size.height);
     let (x_offset, y_offset) = match config.generation.offset {
         true => (
-            rng.random_range(0..tileset.tile_width),
-            rng.random_range(0..tileset.tile_height)
+            rng.random_range(0..tileset.width),
+            rng.random_range(0..tileset.height)
         ),
         false => (0, 0)
     };
 
-    result.generate_placement_points(x_offset, y_offset, tileset.tile_width, tileset.tile_height);
-
+    result.generate_placement_points(x_offset, y_offset, tileset.width, tileset.height);
 
     println!("Beginning generation...");
     while !result.placement_points.is_empty() {

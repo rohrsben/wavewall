@@ -20,6 +20,7 @@ use tsruntime::TilesetRuntime;
 #[derive(Debug)]
 pub struct Tileset {
     lua: mlua::Lua,
+    pub name: String,
     pub config: TilesetConfig,
     pub tiles: HashMap<String, Tile>
 }
@@ -27,21 +28,32 @@ pub struct Tileset {
 impl Tileset {
     // TODO this is a huge function. perhaps this can be broken up?
     pub fn into_runtime(self) -> Result<TilesetRuntime, AppError> {
-        let Tileset { lua, mut config, mut tiles } = self;
+        let Tileset { 
+            lua,
+            name,
+            mut config,
+            mut tiles
+        } = self;
+
+        if tiles.is_empty() {
+            return Err(AppError::Runtime(
+                format!("In tileset {name}: No tiles found.")
+            ))
+        }
+
+        if config.recipes.is_empty() {
+            return Err(AppError::Runtime(
+                format!("In tileset {name}: No recipes found.")
+            ))
+        }
 
         let selected_recipe = {
-            if config.recipes.is_empty() {
-                let msg = format!("No recipes found.");
-                return Err(AppError::Runtime(msg))
-            };
-
             if let Some(choice) = &config.selection {
                 match config.recipes.remove(choice) {
                     Some(recipe) => recipe,
-                    None => {
-                        let msg = format!("No recipe found with name: {}", choice);
-                        return Err(AppError::Runtime(msg));
-                    }
+                    None => return Err(AppError::Runtime(
+                        format!("In tileset {name}: No recipe found with name '{choice}'")
+                    ))
                 };
             };
 
@@ -49,28 +61,49 @@ impl Tileset {
             config.recipes.remove(&random_choice).unwrap()
         };
 
-        let selected_tiles = match selected_recipe.tiles {
-            Tiles::Nil => tiles, // from the pattern-match on self
+        let tiles = match selected_recipe.tiles {
+            Tiles::Nil => {
+                let mut all_tiles = Vec::new();
+
+                for (_, tile) in tiles {
+                    all_tiles.push((tile, 1));
+                }
+
+                all_tiles
+            }
             Tiles::List(choices) => {
-                let mut validated_tiles = HashMap::new();
+                let mut validated_tiles = Vec::new();
 
                 for tile_name in choices {
                     match tiles.remove(&tile_name) {
-                        Some(tile) => validated_tiles.insert(tile_name, tile),
-                        None => {
-                            let msg = format!("No tile found with name: {}", tile_name);
-                            return Err(AppError::Runtime(msg));
-                        }
+                        Some(tile) => validated_tiles.push((tile, 1)),
+                        None => return Err(AppError::Runtime(
+                            format!("In tileset {name}: No tile found with name '{tile_name}'")
+                        ))
                     };
                 }
 
                 validated_tiles
             }
+            Tiles::Table(probabilities) => {
+                let mut weighted_tiles = Vec::new();
+
+                for (tile_name, weight) in probabilities {
+                    match tiles.remove(&tile_name) {
+                        Some(tile) => weighted_tiles.push((tile, weight)),
+                        None => return Err(AppError::Runtime(
+                            format!("In tileset {name}: No tile found with name '{tile_name}'")
+                        ))
+                    }
+                }
+
+                weighted_tiles
+            }
         };
 
-        let tile_width = config.info.size.width;
+        let width = config.info.size.width;
 
-        let tile_height = config.info.size.height;
+        let height = config.info.size.height;
 
         let colorizer = match config.colorizer {
             Colorizer::Nil => None,
@@ -79,15 +112,15 @@ impl Tileset {
 
         Ok(TilesetRuntime {
             lua,
-            tiles: selected_tiles,
-            tile_width,
-            tile_height,
+            tiles,
+            width,
+            height,
             colorizer
         })
     }
 }
 
-pub fn parse_all() -> Result<HashMap<String, Tileset>, AppError> {
+pub fn parse_all() -> Result<Vec<Tileset>, AppError> {
     let is_tileset = |entry: &DirEntry| {
         if entry.metadata()?.is_dir() {
             let ts_config_path = format!("{}/tileset.lua", entry.path().to_string_lossy());
@@ -100,22 +133,22 @@ pub fn parse_all() -> Result<HashMap<String, Tileset>, AppError> {
         Ok::<bool, AppError>(false)
     };
 
-    let mut tilesets = HashMap::new();
+    let mut tilesets = Vec::new();
 
     for entry in fs::read_dir(".")? {
         let entry = entry?;
         if is_tileset(&entry).unwrap() {
             let name = entry.file_name().to_string_lossy().to_string();
-            let tileset = parse(&name)?;
+            let tileset = parse(name)?;
 
-            tilesets.insert(name, tileset);
+            tilesets.push(tileset)
         }
     }
 
     Ok(tilesets)
 }
 
-pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
+pub fn parse(tileset: String) -> Result<Tileset, AppError> {
     let lua = mlua::Lua::new();
 
     let path = format!("{tileset}/tileset.lua");
@@ -123,12 +156,13 @@ pub fn parse(tileset: &str) -> Result<Tileset, AppError> {
     let config = lua.load(config)
         .set_name(format!("@{path}"))
         .eval::<mlua::Table>()?;
-    let config = tsconfig::parse(config, tileset)?;
+    let config = tsconfig::parse(config, &tileset)?;
 
-    let tiles = parse_images(tileset)?;
+    let tiles = parse_images(&tileset)?;
 
     Ok(Tileset {
         lua,
+        name: tileset,
         config,
         tiles
     })

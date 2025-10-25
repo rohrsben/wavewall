@@ -13,7 +13,6 @@
 - allow probability for tile selections
 - coloring
     - color code <-> color code
-    - lua function
 - pseudotiles
     - reflection
     - rotation

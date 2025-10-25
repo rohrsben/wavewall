@@ -1,20 +1,18 @@
-use std::collections::HashMap;
-
-use rand::seq::IteratorRandom;
+use rand::seq::IndexedRandom;
 
 use crate::tileset::tile::Tile;
 
 #[derive(Debug)]
 pub struct TilesetRuntime {
     pub lua: mlua::Lua,
-    pub tiles: HashMap<String, Tile>,
-    pub tile_width: usize,
-    pub tile_height: usize,
+    pub tiles: Vec<(Tile, i64)>,
+    pub width: usize,
+    pub height: usize,
     pub colorizer: Option<mlua::Function>,
 }
 
 impl TilesetRuntime {
     pub fn get_tile(&self) -> &Tile {
-        self.tiles.values().choose(&mut rand::rng()).unwrap()
+        &self.tiles.choose_weighted(&mut rand::rng(), |item| item.1).unwrap().0
     }
 }
