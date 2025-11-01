@@ -2,7 +2,7 @@ use hex_color::HexColor;
 
 #[derive(Debug)]
 pub struct PixelInfo {
-    pixel: HexColor,
+    pub pixel: HexColor,
     x: usize,
     y: usize,
 }

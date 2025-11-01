@@ -13,7 +13,6 @@ use crate::error::AppError;
 
 use tsconfig::TilesetConfig;
 use tsconfig::recipes::tiles::Tiles;
-use tsconfig::colorizer::Colorizer;
 use tile::Tile;
 use tsruntime::TilesetRuntime;
 
@@ -105,10 +104,8 @@ impl Tileset {
 
         let height = config.info.size.height;
 
-        let colorizer = match config.colorizer {
-            Colorizer::Nil => None,
-            Colorizer::Function(func) => Some(func)
-        };
+        let colorizer = config.colorizer;
+
 
         Ok(TilesetRuntime {
             lua,

@@ -1,7 +1,6 @@
 use std::{env::set_current_dir, process};
 
-use hex_color::HexColor;
-use libwavewall::{config, image::{Image, pixel_info::PixelInfo}, tileset};
+use libwavewall::{config, image::Image, tileset::{self, tsconfig::colorizer::Colorizer}};
 use libwavewall::config::generation::tileset::Tileset;
 use rand::prelude::*;
 
@@ -56,22 +55,11 @@ fn main() {
         result.overlay_image(&tile.image, x, y);
     }
 
-    if let Some(colorizer) = tileset.colorizer {
+    // TODO this is... weird... but probably not a big deal?
+    if !matches!(tileset.colorizer, Colorizer::Nil) {
         println!("Beginning re-color...");
-        for (index, pixel) in result.pixels.iter_mut().enumerate() {
-            let (x, y) = (index % result.width, index / result.width);
-            let info = PixelInfo::new(*pixel, x, y);
 
-            // TODO handle _much_ better
-            let return_val = colorizer.call::<mlua::Table>(info).unwrap();
-            let r = return_val.get::<mlua::Integer>("r").unwrap() as u8;
-            let g = return_val.get::<mlua::Integer>("g").unwrap() as u8;
-            let b = return_val.get::<mlua::Integer>("b").unwrap() as u8;
-            let a = return_val.get::<mlua::Integer>("a").unwrap() as u8;
-
-            let new_color = HexColor::rgba(r, g, b, a);
-            *pixel = new_color;
-        }
+        question_mark(result.recolor(&tileset.colorizer));
     }
 
     let path = config.output.filepath();

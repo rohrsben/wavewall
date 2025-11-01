@@ -8,6 +8,8 @@ use png::{Decoder, Encoder};
 use hex_color::HexColor;
 
 use crate::error::AppError;
+use crate::image::pixel_info::PixelInfo;
+use crate::tileset::tsconfig::colorizer::Colorizer;
 
 #[derive(Debug)]
 pub struct Image {
@@ -60,6 +62,7 @@ impl Image {
         Ok(image)
     }
 
+    // TODO this should be faster
     pub fn save(&self, path: &str) -> Result<(), AppError> {
         let save_file = File::create(path)?;
         let ref mut w = BufWriter::new(save_file);
@@ -96,6 +99,21 @@ impl Image {
         }
     }
 
+    pub fn recolor(&mut self, colorizer: &Colorizer) -> Result<(), AppError> {
+        let to_pixel_info = |index: usize, color: HexColor| {
+            let (x, y) = (index % self.width, index / self.width);
+            PixelInfo::new(color, x, y)
+        };
+
+        for (index, color) in self.pixels.iter_mut().enumerate() {
+            let info = to_pixel_info(index, color.clone());
+            let new_color = colorizer.apply(info)?;
+            *color = new_color
+        }
+
+        Ok(())
+    }
+
     pub fn as_vec(&self) -> Vec<u8> {
         self.pixels.iter()
             .map(|pixel| vec![pixel.r, pixel.g, pixel.b, pixel.a])
@@ -104,7 +122,6 @@ impl Image {
     }
 
     // (x, y) denotes where the top left of the overlay will be placed on the base image
-    // TODO this actually needs to take isize's, and all knock-on effects
     pub fn overlay_image(&mut self, overlay: &Self, start_x: isize, start_y: isize) {
         for overlay_y in 0..overlay.height {
             for overlay_x in 0..overlay.width {

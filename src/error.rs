@@ -21,6 +21,9 @@ pub enum AppError {
     #[error("Error encoding image: {0}")]
     ImageEncode(#[from] png::EncodingError),
 
+    #[error("Error converting color code: {0}")]
+    HexColor(#[from] hex_color::ParseHexColorError),
+
     #[error("IO Error: {0}")]
     IO(#[from] std::io::Error),
 }
