@@ -27,7 +27,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Size, AppError> {
         }
         _ => Err(AppError::ConfigType(
             format!("{tileset}.info.size"),
-            "table",
+            format!("table"),
             input.type_name().to_string()
         ))
     }

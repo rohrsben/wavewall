@@ -22,7 +22,7 @@ pub fn parse(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Tiles, A
                         mlua::Value::String(str) => tile_names.push(str.to_string_lossy()),
                         _ => return Err(AppError::ConfigTypeListItem(
                             format!("{tileset}.recipes.{recipe}.tiles"),
-                            "string",
+                            format!("string"),
                             item.type_name().to_string()
                         ))
                     }
@@ -46,7 +46,7 @@ pub fn parse(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Tiles, A
                         mlua::Value::Integer(int) => int,
                         _ => return Err(AppError::ConfigTypeTableItem(
                             format!("{tileset}.recipes.{recipe}.tiles"), 
-                            "integer", 
+                            format!("integer"), 
                             weight.type_name().to_string()
                         ))
                     };
@@ -59,7 +59,7 @@ pub fn parse(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Tiles, A
         }
         _ => Err(AppError::ConfigType(
             format!("{tileset}.recipes.{recipe}.tiles"), 
-            "nil, list of string, table",
+            format!("nil, list of string, table"),
             input.type_name().to_string()
         ))
     }

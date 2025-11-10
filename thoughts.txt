@@ -7,14 +7,9 @@
     - for now, just let it be single file
 - store a reference to a pixel in the image, and then realize it with the colorizer function so that
   theres only one pass?
-- something should be done with the colorizer processing. maybe getting the pixels out of the result variable and then just mapping it?a lambda that takes a pixel and returns the new pixel? or takes an enumeration maybe
 
-
-- coloring
-    - color code <-> color code
-- pseudotiles
-    - reflection
-    - rotation
 - connected components across tiles
 - integer multiple tiles
 - template subcommand
+- command to get colors from a tile
+    - output in descending order, hex and rgb

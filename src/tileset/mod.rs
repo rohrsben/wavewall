@@ -46,6 +46,23 @@ impl Tileset {
             ))
         }
 
+        if let Some(pseudotiles) = &config.pseudotiles {
+            for pseudo in pseudotiles {
+                match tiles.get(&pseudo.original) {
+                    Some(original) => {
+                        let new_tile = Tile {
+                            image: original.image.create_transform(pseudo.transform),
+                        };
+
+                        tiles.insert(pseudo.name.clone(), new_tile);
+                    }
+                    None => return Err(AppError::Runtime(
+                        format!("In tileset {name}, while generating pseudotiles: no original found with name '{}'", pseudo.original)
+                    ))
+                }
+            }
+        }
+
         let selected_recipe = {
             if let Some(choice) = &config.selection {
                 match config.recipes.remove(choice) {

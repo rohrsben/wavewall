@@ -1,4 +1,5 @@
 pub mod pixel_info;
+pub mod transform;
 
 use std::collections::VecDeque;
 use std::fs::File;
@@ -10,6 +11,8 @@ use hex_color::HexColor;
 use crate::error::AppError;
 use crate::image::pixel_info::PixelInfo;
 use crate::tileset::tsconfig::colorizer::Colorizer;
+
+use transform::Transform;
 
 #[derive(Debug)]
 pub struct Image {
@@ -62,6 +65,32 @@ impl Image {
         Ok(image)
     }
 
+    pub fn create_transform(&self, transform: Transform) -> Self {
+        let mut new_image = Image::new(self.width, self.height);
+
+        let converter = |index: usize| {
+            let (old_x, old_y) = self.index_to_xy(index);
+
+            let (new_x, new_y) = match transform {
+                Transform::TurnOnce     => (old_y,                  self.width - old_x - 1),
+                Transform::TurnTwice    => (self.width - old_x - 1, self.width - old_y - 1),
+                Transform::TurnThrice   => (self.width - old_y - 1, old_x),
+                Transform::Horizontal   => (old_x,                  self.width - old_y - 1),
+                Transform::Vertical     => (self.width - old_x - 1, old_y),
+                Transform::Diagonal     => (old_y,                  old_x),
+                Transform::Antidiagonal => (self.width - old_y - 1, self.width - old_x - 1)
+            };
+
+            self.xy_to_index(new_x, new_y)
+        };
+
+        for (index, pixel) in self.pixels.iter().enumerate() {
+            new_image.place_pixel_index(*pixel, converter(index));
+        }
+
+        new_image
+    }
+
     // TODO this should be faster
     pub fn save(&self, path: &str) -> Result<(), AppError> {
         let save_file = File::create(path)?;
@@ -106,9 +135,7 @@ impl Image {
         };
 
         for (index, color) in self.pixels.iter_mut().enumerate() {
-            let info = to_pixel_info(index, color.clone());
-            let new_color = colorizer.apply(info)?;
-            *color = new_color
+            *color = colorizer.apply(to_pixel_info(index, color.clone()))?;
         }
 
         Ok(())
@@ -158,15 +185,15 @@ impl Image {
         self.pixels[index] = new_pixel
     }
 
+    pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
+        (index % self.width, index / self.width)
+    }
+
     fn is_in_bounds(&self, x: usize, y: usize) -> bool {
         x < self.width && y < self.height
     }
 
     fn xy_to_index(&self, x: usize, y: usize) -> usize {
         y * self.width + x
-    }
-
-    pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
-        (index % self.width, index / self.width)
     }
 }

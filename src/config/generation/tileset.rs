@@ -19,8 +19,8 @@ pub fn parse(input: mlua::Value) -> Result<Tileset, AppError> {
                 match item {
                     mlua::Value::String(str) => choices.push(str.to_string_lossy()),
                     _ => return Err(AppError::ConfigTypeListItem(
-                        "wavewall.generation.tileset".to_string(),
-                        "string",
+                        format!("wavewall.generation.tileset"),
+                        format!("string"),
                         item.type_name().to_string()
                     ))
                 }
@@ -29,8 +29,8 @@ pub fn parse(input: mlua::Value) -> Result<Tileset, AppError> {
             Ok(Tileset::List(choices))
         }
         _ => Err(AppError::ConfigType(
-            "wavewall.generation.tileset".to_string(),
-            "nil, string, list of string",
+            format!("wavewall.generation.tileset"),
+            format!("nil, string, list of string"),
             input.type_name().to_string()
         ))
     }

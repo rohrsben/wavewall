@@ -1,5 +1,6 @@
 pub mod recipes;
 pub mod info;
+pub mod pseudotiles;
 pub mod colorizer;
 
 use std::collections::HashMap;
@@ -10,6 +11,7 @@ use crate::{error::AppError, parse};
 pub struct TilesetConfig {
     pub info: info::Info,
     pub selection: Option<String>,
+    pub pseudotiles: Option<Vec<pseudotiles::Pseudotile>>,
     pub recipes: HashMap<String, recipes::Recipe>,
     pub colorizer: colorizer::Colorizer,
 }
@@ -25,6 +27,11 @@ pub fn parse(input: mlua::Table, tileset: &str) -> Result<TilesetConfig, AppErro
         format!("{tileset}.selection")
     )?;
 
+    let pseudotiles = pseudotiles::parse(
+        input.get::<mlua::Value>("pseudotiles")?,
+        tileset
+    )?;
+
     let recipes = recipes::parse(
         input.get::<mlua::Value>("recipes")?,
         tileset
@@ -38,6 +45,7 @@ pub fn parse(input: mlua::Table, tileset: &str) -> Result<TilesetConfig, AppErro
     Ok(TilesetConfig {
         info,
         selection,
+        pseudotiles,
         recipes,
         colorizer
     })

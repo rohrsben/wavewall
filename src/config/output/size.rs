@@ -26,8 +26,8 @@ pub fn parse(input: mlua::Value) -> Result<Size, AppError> {
             })
         }
         _ => Err(AppError::ConfigType(
-            "wavewall.output.size".to_string(),
-            "table",
+            format!("wavewall.output.size"),
+            format!("table"),
             input.type_name().to_string()
         ))
     }

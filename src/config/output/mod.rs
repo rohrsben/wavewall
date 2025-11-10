@@ -50,8 +50,8 @@ pub fn parse(input: mlua::Value) -> Result<Output, AppError> {
             })
         }
         _ => Err(AppError::ConfigType(
-            "wavewall.output".to_string(),
-            "nil, table",
+            format!("wavewall.output"),
+            format!("nil, table"),
             input.type_name().to_string()
         ))
     }

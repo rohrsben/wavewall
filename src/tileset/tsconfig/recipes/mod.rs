@@ -26,7 +26,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<HashMap<String, Recipe
         }
         _ => Err(AppError::ConfigType(
             format!("{tileset}.recipes"),
-            "table",
+            format!("table"),
             input.type_name().to_string()
         ))
     }
@@ -46,7 +46,7 @@ fn parse_recipe(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Recip
         }
         _ => Err(AppError::ConfigType(
             format!("{tileset}.recipes.{recipe}"),
-            "table",
+            format!("table"),
             input.type_name().to_string()
         ))
     }

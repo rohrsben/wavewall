@@ -9,8 +9,8 @@ pub fn parse(input: mlua::Value) -> Result<bool, AppError> {
         mlua::Value::Nil => Ok(default()),
         mlua::Value::Boolean(b) => Ok(b),
         _ => Err(AppError::ConfigType(
-            "wavewall.generation.offset".to_string(), 
-            "boolean",
+            format!("wavewall.generation.offset"), 
+            format!("boolean"),
             input.type_name().to_string()
         ))
     }

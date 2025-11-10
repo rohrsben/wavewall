@@ -112,7 +112,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Colorizer, AppError> {
                     mlua::Value::Function(func) => Converter::Function(func),
                     _ => return Err(AppError::ConfigTypeTableItem(
                         format!("{tileset}.colorizer.conversions"), 
-                        "string, function",
+                        format!("string, function"),
                         converter.type_name().to_string()
                     ))
                 };
@@ -127,7 +127,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Colorizer, AppError> {
         }
         _ => Err(AppError::ConfigType(
             format!("{tileset}.colorizer"),
-            "nil, table, function",
+            format!("nil, table, function"),
             input.type_name().to_string()
         ))
     }
