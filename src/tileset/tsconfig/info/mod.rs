@@ -1,10 +1,12 @@
+pub mod size;
+
 use crate::error::AppError;
 
-pub mod size;
+pub use size::Size;
 
 #[derive(Debug)]
 pub struct Info {
-    pub size: size::Size,
+    pub size: Size,
 }
 
 pub fn parse(input: mlua::Value, tileset: &str) -> Result<Info, AppError> {

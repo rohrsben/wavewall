@@ -1,5 +1,5 @@
-pub mod pixel_info;
 pub mod transform;
+pub use transform::Transform;
 
 use std::collections::VecDeque;
 use std::fs::File;
@@ -9,10 +9,8 @@ use png::{Decoder, Encoder};
 use hex_color::HexColor;
 
 use crate::error::AppError;
-use crate::image::pixel_info::PixelInfo;
-use crate::tileset::tsconfig::colorizer::Colorizer;
-
-use transform::Transform;
+use crate::user_data::PixelInfo;
+use crate::tileset::tsconfig::Colorizer;
 
 #[derive(Debug)]
 pub struct Image {
@@ -33,6 +31,25 @@ impl Image {
             pixels,
             placement_points
         }
+    }
+
+    pub fn create_template(length: usize) -> Self {
+        let mut template = Image::new(length, length);
+
+        let mut midpoints = Vec::new();
+        if length % 2 == 0 {
+            midpoints.push(length / 2 - 1);
+        }
+        midpoints.push(length / 2);
+
+        for mp in midpoints {
+            template.place_pixel_xy(HexColor::RED, 0,          mp);
+            template.place_pixel_xy(HexColor::RED, mp,         0);
+            template.place_pixel_xy(HexColor::RED, mp,         length - 1);
+            template.place_pixel_xy(HexColor::RED, length - 1, mp);
+        }
+
+        template
     }
 
     pub fn from_path(path: &str) -> Result<Self, AppError> {
@@ -68,20 +85,57 @@ impl Image {
     pub fn create_transform(&self, transform: Transform) -> Self {
         let mut new_image = Image::new(self.width, self.height);
 
-        let converter = |index: usize| {
-            let (old_x, old_y) = self.index_to_xy(index);
-
-            let (new_x, new_y) = match transform {
-                Transform::TurnOnce     => (old_y,                  self.width - old_x - 1),
-                Transform::TurnTwice    => (self.width - old_x - 1, self.width - old_y - 1),
-                Transform::TurnThrice   => (self.width - old_y - 1, old_x),
-                Transform::Horizontal   => (old_x,                  self.width - old_y - 1),
-                Transform::Vertical     => (self.width - old_x - 1, old_y),
-                Transform::Diagonal     => (old_y,                  old_x),
-                Transform::Antidiagonal => (self.width - old_y - 1, self.width - old_x - 1)
-            };
-
-            self.xy_to_index(new_x, new_y)
+        // more performant than matching inside the closure... but at what cost?
+        let converter: Box<dyn Fn(usize) -> usize > = match transform {
+            Transform::TurnOnce => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    old_y,
+                    self.width - old_x - 1
+                )
+            }),
+            Transform::TurnTwice => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    self.width - old_x - 1,
+                    self.width - old_y - 1
+                )
+            }),
+            Transform::TurnThrice => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    self.width - old_y - 1,
+                    old_x
+                )
+            }),
+            Transform::Horizontal => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    old_x,
+                    self.width - old_y - 1
+                )
+            }),
+            Transform::Vertical => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    self.width - old_x - 1,
+                    old_y
+                )
+            }),
+            Transform::Diagonal => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    old_y,
+                    old_x
+                )
+            }),
+            Transform::Antidiagonal => Box::new(|index| {
+                let (old_x, old_y) = self.index_to_xy(index);
+                self.xy_to_index(
+                    self.width - old_y - 1,
+                    self.width - old_x - 1
+                )
+            })
         };
 
         for (index, pixel) in self.pixels.iter().enumerate() {

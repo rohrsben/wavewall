@@ -1,3 +1,5 @@
+use crate::error::AppError;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Transform {
     TurnOnce,
@@ -9,16 +11,21 @@ pub enum Transform {
     Antidiagonal
 }
 
-impl std::fmt::Display for Transform {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Transform::TurnOnce => write!(f, "90"),
-            Transform::TurnTwice => write!(f, "180"),
-            Transform::TurnThrice => write!(f, "270"),
-            Transform::Horizontal => write!(f, "horizontal"),
-            Transform::Vertical => write!(f, "vertical"),
-            Transform::Diagonal => write!(f, "diagonal"),
-            Transform::Antidiagonal => write!(f, "antidiagonal"),
+impl std::str::FromStr for Transform {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            // REMINDER: if you change these, change them in tileset/mod.rs also
+            //   or, figure out a better way to make create_pseudos() lol
+            "90" => Ok(Transform::TurnOnce),
+            "180" => Ok(Transform::TurnTwice),
+            "270" => Ok(Transform::TurnThrice),
+            "horizontal" => Ok(Transform::Horizontal),
+            "vertical" => Ok(Transform::Vertical),
+            "diagonal" => Ok(Transform::Diagonal),
+            "antidiagonal" => Ok(Transform::Antidiagonal),
+            _ => Err(AppError::TransformParse)
         }
     }
 }

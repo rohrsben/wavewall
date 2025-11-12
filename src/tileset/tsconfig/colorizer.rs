@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use hex_color::HexColor;
 
 use crate::error::AppError;
-use crate::image::pixel_info::PixelInfo;
+use crate::user_data::PixelInfo;
 use crate::parse;
 
 #[derive(Debug)]
@@ -53,12 +53,12 @@ impl Colorizer {
         };
 
         match self {
-            Colorizer::Nil => Ok(input.pixel), // in theory this won't be used
+            Colorizer::Nil => Ok(input.color), // in theory this won't be used
             Colorizer::Function(func) => call(func, input),
             Colorizer::Table { default, conversions } => {
-                match conversions.get(&input.pixel) {
+                match conversions.get(&input.color) {
                     None => match default {
-                        None => Ok(input.pixel),
+                        None => Ok(input.color),
                         Some(func) => call(func, input)
                     }
                     Some(converter) => {
@@ -102,8 +102,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Colorizer, AppError> {
             for pair in conversions_table.pairs::<mlua::String, mlua::Value>() {
                 let (color, converter) = pair?;
 
-                let color = color.to_string_lossy();
-                let color = HexColor::parse(&color)?;
+                let color = HexColor::parse(&color.to_string_lossy())?;
                 let converter = match converter {
                     mlua::Value::String(str) => {
                         let str = str.to_string_lossy();

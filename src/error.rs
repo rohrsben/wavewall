@@ -16,6 +16,9 @@ pub enum AppError {
     #[error("{0}")]
     Runtime(String),
 
+    #[error("Failed to convert string to a Transform")]
+    TransformParse,
+
     #[error("Error decoding image: {0}")]
     ImageDecode(#[from] png::DecodingError),
     #[error("Error encoding image: {0}")]

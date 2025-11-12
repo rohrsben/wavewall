@@ -11,7 +11,12 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn filepath(&self) -> String {
+    // TODO consider moving this to a more general, util-esque module
+    pub fn filepath(&self, user_path: &Option<String>) -> String {
+        if let Some(path) = user_path {
+            return path.clone()
+        }
+
         let name = match &self.filename {
             Some(str) => str.clone(),
             None => String::from("result.png")

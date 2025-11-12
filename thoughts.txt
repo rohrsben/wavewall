@@ -5,11 +5,15 @@
         2. spawning a thread (for each tset??) -> communicating... probably more difficult?
            would need to check how send works at min, maybe sync
     - for now, just let it be single file
+    - TODO look into the mlua Send (or Sync?) feature, could solve this (if it needs to be solved)
+        - or lua.create_thread()?
 - store a reference to a pixel in the image, and then realize it with the colorizer function so that
   theres only one pass?
 
+todo list
 - connected components across tiles
+    ? is there even a point to this in tiling mode
 - integer multiple tiles
-- template subcommand
-- command to get colors from a tile
-    - output in descending order, hex and rgb
+- subcommands:
+    - check
+    - colors

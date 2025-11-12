@@ -7,12 +7,17 @@ use std::collections::HashMap;
 
 use crate::{error::AppError, parse};
 
+pub use recipes::Recipe;
+pub use info::Info;
+pub use pseudotiles::Pseudotile;
+pub use colorizer::Colorizer;
+
 #[derive(Debug)]
 pub struct TilesetConfig {
-    pub info: info::Info,
+    pub info: Info,
     pub selection: Option<String>,
-    pub pseudotiles: Option<Vec<pseudotiles::Pseudotile>>,
-    pub recipes: HashMap<String, recipes::Recipe>,
+    pub pseudotiles: Option<Vec<Pseudotile>>,
+    pub recipes: HashMap<String, Recipe>,
     pub colorizer: colorizer::Colorizer,
 }
 

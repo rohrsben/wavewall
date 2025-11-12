@@ -1,5 +1,4 @@
 pub mod tsconfig;
-pub mod tile;
 pub mod tsruntime;
 
 use std::collections::HashMap;
@@ -7,25 +6,28 @@ use std::fs::{self, DirEntry};
 use std::path::Path;
 
 use infer;
+use hex_color::HexColor;
 use rand::seq::IteratorRandom;
 
 use crate::error::AppError;
+use crate::user_data::ColorInfo;
+use crate::image::Image;
 
-use tsconfig::TilesetConfig;
-use tsconfig::recipes::tiles::Tiles;
-use tile::Tile;
+use tsconfig::recipes::Tiles;
 use tsruntime::TilesetRuntime;
+
+pub use tsconfig::TilesetConfig;
 
 #[derive(Debug)]
 pub struct Tileset {
     lua: mlua::Lua,
     pub name: String,
     pub config: TilesetConfig,
-    pub tiles: HashMap<String, Tile>
+    pub tiles: HashMap<String, Image>
 }
 
 impl Tileset {
-    // TODO this is a huge function. perhaps this can be broken up?
+    // TODO this is a huge function. perhaps this can be broken up? or moved to tsruntime?
     pub fn into_runtime(self) -> Result<TilesetRuntime, AppError> {
         let Tileset { 
             lua,
@@ -50,9 +52,7 @@ impl Tileset {
             for pseudo in pseudotiles {
                 match tiles.get(&pseudo.original) {
                     Some(original) => {
-                        let new_tile = Tile {
-                            image: original.image.create_transform(pseudo.transform),
-                        };
+                        let new_tile = original.create_transform(pseudo.transform);
 
                         tiles.insert(pseudo.name.clone(), new_tile);
                     }
@@ -132,6 +132,50 @@ impl Tileset {
             colorizer
         })
     }
+
+    pub fn new_lua() -> Result<mlua::Lua, AppError> {
+        let lua = mlua::Lua::new();
+
+        let convert_rgb = lua.create_function(|_, (r, g, b)| {
+            let color = HexColor::rgb(r, g, b);
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_rgb", convert_rgb)?;
+
+        let convert_rgba = lua.create_function(|_, (r, g, b, a)| {
+            let color = HexColor::rgba(r, g, b, a);
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_rgba", convert_rgba)?;
+
+        let convert_hex = lua.create_function(|_, hex: String| {
+            let color = match HexColor::parse(&hex) {
+                Ok(color) => color,
+                Err(_) => return Err(mlua::Error::RuntimeError(format!("While calling hex_to_rgba: failed to parse '{hex}'")))
+            };
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_hex", convert_hex)?;
+
+        lua.load(r#"
+            function create_pseudos(original)
+                return {
+                    [original .. '_90'] = '90',
+                    [original .. '_180'] = '180',
+                    [original .. '_270'] = '270',
+                    [original .. '_horizontal'] = 'horizontal',
+                    [original .. '_vertical'] = 'vertical',
+                    [original .. '_diagonal'] = 'diagonal',
+                    [original .. '_antidiagonal'] = 'antidiagonal',
+                }
+            end
+        "#).exec()?;
+
+        Ok(lua)
+    }
 }
 
 pub fn parse_all() -> Result<Vec<Tileset>, AppError> {
@@ -163,7 +207,7 @@ pub fn parse_all() -> Result<Vec<Tileset>, AppError> {
 }
 
 pub fn parse(tileset: String) -> Result<Tileset, AppError> {
-    let lua = mlua::Lua::new();
+    let lua = Tileset::new_lua()?;
 
     let path = format!("{tileset}/tileset.lua");
     let config = fs::read_to_string(&path)?;
@@ -182,7 +226,7 @@ pub fn parse(tileset: String) -> Result<Tileset, AppError> {
     })
 }
 
-fn parse_images(tileset: &str) -> Result<HashMap<String, Tile>, AppError> {
+fn parse_images(tileset: &str) -> Result<HashMap<String, Image>, AppError> {
     let mut tiles = HashMap::new();
 
     let is_png = |file: &DirEntry| {
@@ -209,7 +253,7 @@ fn parse_images(tileset: &str) -> Result<HashMap<String, Tile>, AppError> {
 
             // TODO low priority: this could probably be better
             let path = file.path().to_string_lossy().to_string();
-            let tile = Tile::from_path(&path)?;
+            let tile = Image::from_path(&path)?;
 
             tiles.insert(name, tile);
         }

@@ -1,5 +1,7 @@
+use std::str::FromStr;
+
 use crate::error::AppError;
-use crate::image::transform::Transform;
+use crate::image::Transform;
 
 #[derive(Debug)]
 pub struct Pseudotile {
@@ -27,6 +29,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Option<Vec<Pseudotile>
                 pseudotiles.append(&mut pseudos);
             }
             
+            println!("pseudotiles: {:?}", pseudotiles);
             Ok(Some(pseudotiles))
         },
         _ => Err(AppError::ConfigType(
@@ -46,37 +49,27 @@ fn parse_pseudos(input: mlua::Value, original: &str, tileset: &str) -> Result<Ve
                 ))
             }
 
+            // TODO it feels like theres opportunity for more code clarity here
             let mut pseudos = Vec::new();
             for pair in contents.pairs::<mlua::String, mlua::Value>() {
                 let (name, transform) = pair?;
                 let name = name.to_string_lossy();
-                let transform = match transform {
-                    mlua::Value::String(str) => str.to_string_lossy(),
-                    _ => return Err(AppError::ConfigType(
-                        format!("{tileset}.pseudotiles.{original}.{name}"),
-                        format!("string in ('90', '180', '270', 'horizontal', 'vertical', 'diagonal', 'antidiagonal')"),
-                        transform.type_name().to_string()
-                    ))
-                };
 
-                let transform = match transform.as_str() {
-                    "90" => Transform::TurnOnce,
-                    "180" => Transform::TurnTwice,
-                    "270" => Transform::TurnThrice,
-                    "horizontal" => Transform::Horizontal,
-                    "vertical" => Transform::Vertical,
-                    "diagonal" => Transform::Diagonal,
-                    "antidiagonal" => Transform::Antidiagonal,
-                    _ => return Err(AppError::ConfigType(
+                let transform_type = transform.type_name().to_string();
+                let transform = if let mlua::Value::String(str) = transform
+                    && let Ok(t) = Transform::from_str(&str.to_string_lossy()) {
+                    t
+                } else {
+                    return Err(AppError::ConfigType(
                         format!("{tileset}.pseudotiles.{original}.{name}"),
                         format!("string in ('90', '180', '270', 'horizontal', 'vertical', 'diagonal', 'antidiagonal')"),
-                        format!("string '{transform}'")
+                        transform_type
                     ))
                 };
 
                 pseudos.push(Pseudotile {
                     name,
-                    original: original.to_string(),
+                    original: original.to_owned(),
                     transform
                 });
             }

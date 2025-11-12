@@ -4,9 +4,11 @@ use std::collections::HashMap;
 
 use crate::error::AppError;
 
+pub use tiles::Tiles;
+
 #[derive(Debug)]
 pub struct Recipe {
-    pub tiles: tiles::Tiles,
+    pub tiles: Tiles,
 }
 
 pub fn parse(input: mlua::Value, tileset: &str) -> Result<HashMap<String, Recipe>, AppError> {
