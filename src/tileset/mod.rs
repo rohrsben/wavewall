@@ -161,7 +161,7 @@ impl Tileset {
         lua.globals().set("convert_hex", convert_hex)?;
 
         lua.load(r#"
-            function create_pseudos(original)
+            function create_all_pseudos(original)
                 return {
                     [original .. '_90'] = '90',
                     [original .. '_180'] = '180',

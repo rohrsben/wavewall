@@ -29,6 +29,7 @@ impl Colorizer {
 
             match ret {
                 mlua::Value::String(str) => {
+                    // TODO this can probably return a custom error for clarity
                     let str = str.to_string_lossy();
                     Ok(HexColor::parse(&str)?)
                 }
@@ -84,6 +85,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Colorizer, AppError> {
                 ))
             }
 
+            // TODO allow this to be a Direct because why not
             let default = parse::func(
                 contents.get::<mlua::Value>("default")?, 
                 format!("{tileset}.colorizer.default")
@@ -110,7 +112,7 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Colorizer, AppError> {
                     }
                     mlua::Value::Function(func) => Converter::Function(func),
                     _ => return Err(AppError::ConfigTypeTableItem(
-                        format!("{tileset}.colorizer.conversions"), 
+                        format!("{tileset}.colorizer.conversions.{}", color.display_rgba()), 
                         format!("string, function"),
                         converter.type_name().to_string()
                     ))

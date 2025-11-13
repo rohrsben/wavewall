@@ -20,7 +20,7 @@ pub fn uint(input: mlua::Value, location: String) -> Result<Option<usize>, AppEr
         mlua::Value::Nil => Ok(None),
         mlua::Value::Integer(int) => {
             if int < 0 {
-                return Err(AppError::ConfigType(location, format!("nil, positive integer"), input.type_name().to_string()))
+                return Err(AppError::ConfigType(location, format!("nil, positive number"), input.type_name().to_string()))
             }
 
             Ok(Some(int as usize))
@@ -29,8 +29,21 @@ pub fn uint(input: mlua::Value, location: String) -> Result<Option<usize>, AppEr
     }
 }
 
+pub fn uint_necessary(input: mlua::Value, location: String) -> Result<usize, AppError> {
+    match input {
+        mlua::Value::Integer(int) => {
+            if int < 0 {
+                return Err(AppError::ConfigType(location, format!("nil, positive number"), input.type_name().to_string()))
+            }
+
+            Ok(int as usize)
+        }
+        _ => Err(AppError::ConfigType(location, format!("nil, positive integer"), input.type_name().to_string()))
+    }
+}
+
 pub fn uint_range(input: mlua::Value, range: std::ops::Range<usize>, location: String) -> Result<Option<usize>, AppError> {
-    let error_string = format!("nil, positive integer in [{}, {})", range.start, range.end);
+    let error_string = format!("nil, positive number in [{}, {})", range.start, range.end);
     match input {
         mlua::Value::Nil => Ok(None),
         mlua::Value::Integer(int) => {
@@ -53,14 +66,14 @@ pub fn int(input: mlua::Value, location: String) -> Result<Option<i64>, AppError
     match input {
         mlua::Value::Nil => Ok(None),
         mlua::Value::Integer(int) => Ok(Some(int)),
-        _ => Err(AppError::ConfigType(location, format!("nil, integer"), input.type_name().to_string()))
+        _ => Err(AppError::ConfigType(location, format!("nil, number"), input.type_name().to_string()))
     }
 }
 
 pub fn int_necessary(input: mlua::Value, location: String) -> Result<i64, AppError> {
     match input {
         mlua::Value::Integer(int) => Ok(int),
-        _ => Err(AppError::ConfigType(location, format!("integer"), input.type_name().to_string()))
+        _ => Err(AppError::ConfigType(location, format!("number"), input.type_name().to_string()))
     }
 }
 

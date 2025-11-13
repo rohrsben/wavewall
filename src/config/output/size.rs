@@ -10,12 +10,12 @@ pub struct Size {
 pub fn parse(input: mlua::Value) -> Result<Size, AppError> {
     match input {
         mlua::Value::Table(contents) => {
-            let width = parse::int_necessary(
+            let width = parse::uint_necessary(
                 contents.get::<mlua::Value>("width")?,
                 "wavewall.output.size.width".to_string()
             )?;
 
-            let height = parse::int_necessary(
+            let height = parse::uint_necessary(
                 contents.get::<mlua::Value>("height")?,
                 "wavewall.output.size.height".to_string()
             )?;

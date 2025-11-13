@@ -42,11 +42,12 @@ pub fn parse(input: mlua::Value, tileset: &str, recipe: &str) -> Result<Tiles, A
                     let (tile_name, weight) = pair?;
 
                     let tile_name = tile_name.to_string_lossy();
+                    // TODO make this a uint, or at least check if negative matters
                     let weight = match weight {
                         mlua::Value::Integer(int) => int,
                         _ => return Err(AppError::ConfigTypeTableItem(
                             format!("{tileset}.recipes.{recipe}.tiles"), 
-                            format!("integer"), 
+                            format!("positive number"), 
                             weight.type_name().to_string()
                         ))
                     };

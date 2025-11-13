@@ -17,7 +17,8 @@
                 buildInputs = with pkgs; [
                     rust-bin.beta.latest.default
                     rust-analyzer
-                    evilpixie
+                    nodePackages.pnpm
+                    nodejs
                 ];
             };
         }

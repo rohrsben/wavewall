@@ -10,12 +10,12 @@ pub struct Size {
 pub fn parse(input: mlua::Value, tileset: &str) -> Result<Size, AppError> {
     match input {
         mlua::Value::Table(contents) => {
-            let height = parse::int_necessary(
+            let height = parse::uint_necessary(
                 contents.get::<mlua::Value>("height")?,
                 format!("{tileset}.info.size.height")
             )?;
 
-            let width = parse::int_necessary(
+            let width = parse::uint_necessary(
                 contents.get::<mlua::Value>("width")?,
                 format!("{tileset}.info.size.width")
             )?;
