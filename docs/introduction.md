@@ -8,6 +8,10 @@ Wavewall itself also has a configuration file, `wavewall.lua`, though this mostl
 # What's a `.lua` file?
 Wavewall is configured using the programming language [lua](https://www.lua.org). If you know it already, great! You'll be excited about the cool stuff this enables wavewall to do. If you don't though, don't worry! Wavewall's configuration is designed to be easy to use even if you've never programmed before. First, check out the [guide](/lua/guide) for the basics, and then get started!
 
+::: warning
+If you do know lua: at the moment, `require`s won't work in a `tileset.lua`. I'm working on this
+:::
+
 ***
 
 # Getting started
