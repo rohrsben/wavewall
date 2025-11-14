@@ -1,24 +1,21 @@
-pub mod size;
-
 use crate::error::AppError;
-
-pub use size::Size;
+use crate::parse;
 
 #[derive(Debug)]
 pub struct Info {
-    pub size: Size,
+    pub tile_size: usize,
 }
 
 pub fn parse(input: mlua::Value, tileset: &str) -> Result<Info, AppError> {
     match input {
         mlua::Value::Table(contents) => {
-            let size = size::parse(
-                contents.get::<mlua::Value>("size")?,
-                tileset
+            let tile_size = parse::uint_necessary(
+                contents.get::<mlua::Value>("tile_size")?,
+                tileset.to_owned()
             )?;
 
             Ok(Info {
-                size
+                tile_size
             })
         }
         _ => Err(AppError::ConfigType(

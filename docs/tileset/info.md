@@ -2,20 +2,14 @@
 Provides wavewall high-level information about the tileset. At the moment, there's not much needed here, but stay tuned!
 
 # Fields
-## `size` - table
-Gives the size in pixels of a tile in the tileset
+## `tile_size` - positive number
 
-### Fields
-- `height`: number
-- `width`: number
+Sidelength of the tiles, in pixels
 
 ::: details Example
 ```lua
 info = {
-    size = {
-        height = 32,
-        width = 32,
-    },
+    tile_size = 32,
 }
 ```
 :::

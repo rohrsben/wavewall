@@ -50,13 +50,7 @@ return {
 ```lua [tileset.lua]
 return {
     info = {
-        size = {
-            width = <your tile width here>,
-            height = <your tile height here>
-            -- right now, tiles have to be square. If you're seeing this,
-            -- I'm still getting around to either changing the config
-            -- or changing that requirement
-        }
+        tile_size = 32 -- sidelength of your tiles here
     },
     recipes = {
         first_recipe = {

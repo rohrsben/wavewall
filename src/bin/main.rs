@@ -1,6 +1,7 @@
 use std::{env::set_current_dir, process};
 
 use libwavewall::{config, image::Image, tileset::{self, tsconfig::colorizer::Colorizer}};
+use libwavewall::tileset::tsruntime::TilesetRuntime;
 use libwavewall::config::generation::tileset::Tileset;
 use rand::prelude::*;
 
@@ -66,18 +67,18 @@ fn main() {
         }
     };
 
-    let tileset = question_mark(tileset.into_runtime());
+    let tileset = question_mark(TilesetRuntime::from_tileset(tileset));
 
     let mut result = Image::new(config.output.size.width, config.output.size.height);
     let (x_offset, y_offset) = match config.generation.offset {
         true => (
-            rng.random_range(0..tileset.width),
-            rng.random_range(0..tileset.height)
+            rng.random_range(0..tileset.tile_size),
+            rng.random_range(0..tileset.tile_size)
         ),
         false => (0, 0)
     };
 
-    result.generate_placement_points(x_offset, y_offset, tileset.width, tileset.height);
+    result.generate_placement_points(x_offset, y_offset, tileset.tile_size);
 
     println!("Beginning generation...");
     while !result.placement_points.is_empty() {

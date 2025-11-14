@@ -160,19 +160,19 @@ impl Image {
         Ok(())
     }
 
-    pub fn generate_placement_points(&mut self, x_offset: usize, y_offset: usize, tile_width: usize, tile_height: usize) {
+    pub fn generate_placement_points(&mut self, x_offset: usize, y_offset: usize, tile_size: usize) {
         let mut x_coords = Vec::new();
         let mut current_x = -1 * x_offset as isize;
         while current_x < self.width.try_into().unwrap() {
             x_coords.push(current_x);
-            current_x += tile_width as isize;
+            current_x += tile_size as isize;
         }
 
         let mut y_coords = Vec::new();
         let mut current_y = -1 * y_offset as isize;
         while current_y < self.height.try_into().unwrap() {
             y_coords.push(current_y);
-            current_y += tile_height as isize;
+            current_y += tile_size as isize;
         }
 
         for y in y_coords {
