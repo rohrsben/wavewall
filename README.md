@@ -14,7 +14,7 @@ Requirements:
 ## Installation
 ### General
 Wavewall can be installed via cargo:
-`cargo install --git https://github.com/rohrsben/wavewall`
+`cargo install wavewall`
 
 ### Nix
 Just add wavewall to your inputs!
