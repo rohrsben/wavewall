@@ -11,14 +11,14 @@ The size of the output image, measured in pixels.
 - `height`: number
 - `width`: number
 
-## `filename` (optional) - string
+## `filename` - nil, string
 
 The name of the saved image.
 
 ### Default
 `"result.png"`
 
-## `directory` (optional) - string
+## `directory` - nil, string
 The directory where the image is saved.
 
 ### Default

@@ -71,3 +71,4 @@ The sidebar has a few sections. Here's what they mean:
 - **Tileset**: much like above, this goes over the `tileset.lua` options
 - **Commands**: `wavewall` has a few useful secondary commands. This details how to use them and what they do
 - **Lua**: `wavewall` adds a few functions to the lua environment to make writing tileset configurations easier. This tells you what's been added and how to use them, as well as a simple lua guide.
+- **UserData**: explains what the functions that are provided return, and how to use them

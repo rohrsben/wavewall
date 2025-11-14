@@ -18,8 +18,12 @@ recipes = {
 At the moment a `recipe` is just one setting, though this is likely to change in the future (wavewall is in beta after all!).
 
 ### Fields
-#### `tiles` (optional) - list of string, table
-`tiles` describes which tiles (pseudo or otherwise) to use when generating the image. If this isn't set, all tiles are used.
+#### `tiles` - nil, list of string, table
+`tiles` describes which tiles (pseudo or otherwise) to use when generating the image. 
+
+::: details Nil
+Leaving `tiles` nil will cause the recipe to use every tile.
+:::
 
 ::: details List of string
 If tiles is set as a list of strings, here being tile names, then for each spot in the result image where a tile should go, it will be randomly chosen from this list.

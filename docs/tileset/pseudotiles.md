@@ -1,4 +1,4 @@
-# `pseudotiles` (optional) - table
+# `pseudotiles` - nil, table
 Pseudotiles allow you to add tiles to your tileset without creating a whole new `.png` file. They are transformations of "original" tiles, or tiles that do have a corresponding `.png`.
 
 Each entry in the table has a left-hand side of an original, and a right-hand side of another table. This table describes what transformations to apply, and what the new pseudotile should be called.

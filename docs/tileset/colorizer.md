@@ -1,4 +1,4 @@
-# `colorizer` (optional) - table, function
+# `colorizer` - nil, table, function
 ::: details Function Spec
 - *Input*: a [`PixelInfo` object](/userdata/pixelinfo)
 - *Output*: one of
@@ -12,6 +12,21 @@
     a = 255 -- optional
 }
 ```
+
+An omitted `a` value is set to `255`.
+
+::: details Example
+```lua
+function (pixel_info)
+    -- interchanges the r, g, and b values, keeps a the same
+    return {
+        r = pixel_info.g,
+        g = pixel_info.b,
+        b = pixel_info.r,
+        a = pixel_info.a
+    }
+end
+```
 :::
 Setting the `colorizer` allows you to re-color the pixels in the output image. This is done one of two ways:
 - provide a direct mapping from color-code to color-code, or
@@ -19,10 +34,14 @@ Setting the `colorizer` allows you to re-color the pixels in the output image. T
 
 These two methods can be mixed in different ways, so use whichever makes the most sense. That said, the direct mapping is *much* faster.
 
+::: details Nil
+Wavewall won't recolor any pixels, leaving the original color from the tile.
+:::
+
 ::: details Table
 A `colorizer` table requires two fields:
 - `conversions` - table
-- `default` (optional) - function
+- `default` - nil, function
 
 `conversions` is a mapping from color-code to either another color-code, or a function. This is best understood with an example:
 ```lua
@@ -31,7 +50,7 @@ colorizer = {
         ["#000000"] = "#FF0000",
         ["#00FF00"] = function (pixel_info)
             -- function logic omitted
-            return color_code
+            return hex_code
         end
     }
 }

@@ -1,2 +1,4 @@
-> [!WARNING]
-> Wavewall is pre-release, and has ~0 functionality for the foreseeable future
+Wavewall is a tiling wallpaper generator, with a focus on extreme control over the result.
+
+## Installation
+

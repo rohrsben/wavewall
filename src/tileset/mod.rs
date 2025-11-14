@@ -118,7 +118,7 @@ pub fn parse(tileset: String) -> Result<Tileset, AppError> {
     })
 }
 
-fn parse_images(tileset: &str) -> Result<HashMap<String, Image>, AppError> {
+pub fn parse_images(tileset_path: &str) -> Result<HashMap<String, Image>, AppError> {
     let mut tiles = HashMap::new();
 
     let is_png = |file: &DirEntry| {
@@ -138,7 +138,7 @@ fn parse_images(tileset: &str) -> Result<HashMap<String, Image>, AppError> {
         name_string
     };
 
-    for file in fs::read_dir(tileset)? {
+    for file in fs::read_dir(tileset_path)? {
         let file = file?;
         if is_png(&file) {
             let name = normalize_name(&file);

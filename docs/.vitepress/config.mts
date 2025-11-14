@@ -36,10 +36,10 @@ export default defineConfig({
         ],
       },
       {
-        text: 'UserData',
+        text: 'Commands',
         items: [
-          { text: 'PixelInfo', link: '/userdata/pixelinfo' },
-          { text: 'ColorInfo', link: '/userdata/colorinfo' },
+          { text: 'Template', link: '/commands/template' },
+          { text: 'Colors', link: '/commands/colors' }
         ],
       },
       {
@@ -48,7 +48,14 @@ export default defineConfig({
           { text: 'Guide', link: '/lua/guide' },
           { text: 'Provided Functions', link: '/lua/provided_functions' }
         ],
-      }
+      },
+      {
+        text: 'UserData',
+        items: [
+          { text: 'PixelInfo', link: '/userdata/pixelinfo' },
+          { text: 'ColorInfo', link: '/userdata/colorinfo' },
+        ],
+      },
     ],
 
     socialLinks: [

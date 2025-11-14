@@ -1,11 +1,15 @@
-# `generation` (optional) - table
+# `generation` - nil, table
 
 Controls some specifics about the image generation.
 
 # Fields
 
-## `tileset` (optional) - string, list of string
+## `tileset` - nil, string, list of string
 Which tileset to use when generating the image.
+
+::: details Nil
+Leaving `tileset` nil will cause wavewall to pick a tileset at random.
+:::
 
 ::: details String
 Specifies the exact tileset to use.
@@ -32,7 +36,7 @@ generation = {
 ```
 :::
 
-## `offset` (optional) - boolean
+## `offset` - nil, boolean
 By default, wavewall slightly shifts the output so that tiles don't end up in the same place across multiple images. This option allows you to disable that behaviour
 
 Example:
