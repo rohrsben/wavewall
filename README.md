@@ -1,5 +1,20 @@
 Wavewall is a tiling wallpaper generator, with a focus on extreme control over the result.
 
-## Installation
-### Nix
+[Docs](https://rohrsben.github.io/wavewall)
 
+Requirements:
+- MSRV: 1.88.0
+- A terminal which supports true-color (for the `colors` subcommand)
+
+## Roadmap
+- [ ] integer-multiple tile sizes
+- [ ] connected component coloring
+- [ ] wave function collapse mode (the reason for the name!)
+
+## Installation
+### General
+Wavewall can be installed via cargo:
+`cargo install --git https://github.com/rohrsben/wavewall`
+
+### Nix
+Just add wavewall to your inputs!
