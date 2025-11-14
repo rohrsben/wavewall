@@ -33,12 +33,12 @@ pub fn uint_necessary(input: mlua::Value, location: String) -> Result<usize, App
     match input {
         mlua::Value::Integer(int) => {
             if int < 0 {
-                return Err(AppError::ConfigType(location, format!("nil, positive number"), input.type_name().to_string()))
+                return Err(AppError::ConfigType(location, format!("positive number"), input.type_name().to_string()))
             }
 
             Ok(int as usize)
         }
-        _ => Err(AppError::ConfigType(location, format!("nil, positive integer"), input.type_name().to_string()))
+        _ => Err(AppError::ConfigType(location, format!("positive integer"), input.type_name().to_string()))
     }
 }
 

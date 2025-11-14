@@ -13,6 +13,16 @@
                 inherit system overlays;
             };
         in {
+            packages."x86_64-linux" = 
+            let
+                manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
+            in
+                pkgs.rustPlatform.buildRustPackage {
+                    pname = "wavewall";
+                    version = "0.1.0";
+                    cargoLock.lockFile = ./Cargo.lock;
+                    src = pkgs.lib.cleanSource ./.;
+            };
             devShells.default = pkgs.mkShell {
                 buildInputs = with pkgs; [
                     rust-bin.beta.latest.default

@@ -108,7 +108,10 @@ impl TilesetRuntime {
             }
         };
 
-        let tile_size = config.info.tile_size;
+        let tile_size = match config.info.tile_size {
+            Some(size) => size,
+            None => tiles[0].0.width
+        };
 
         let colorizer = config.colorizer;
 

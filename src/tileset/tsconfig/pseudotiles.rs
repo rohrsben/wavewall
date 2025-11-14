@@ -29,7 +29,6 @@ pub fn parse(input: mlua::Value, tileset: &str) -> Result<Option<Vec<Pseudotile>
                 pseudotiles.append(&mut pseudos);
             }
             
-            println!("pseudotiles: {:?}", pseudotiles);
             Ok(Some(pseudotiles))
         },
         _ => Err(AppError::ConfigType(
