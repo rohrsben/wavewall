@@ -2,6 +2,13 @@
 name = "wavewall"
 version = "0.1.0"
 edition = "2024"
+description = "A tiling wallpaper generator"
+documentation = "https://rohrsben.github.io/wavewall"
+repository = "https://github.com/rohrsben/wavewall"
+license = "MIT"
+keywords = ["wallpaper", "aesthetics"]
+categories = ["command-line-utilities", "multimedia::images"]
+exclude = ["/docs", "thoughts.txt", "flake.nix", "flake.lock", ".github/", "package.json", "pnpm-lock.yaml"]
 
 [dependencies]
 clap = { version = "4.5.48", features = ["derive"] }
