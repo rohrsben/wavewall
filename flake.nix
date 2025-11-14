@@ -20,14 +20,11 @@
                     cargoLock.lockFile = ./Cargo.lock;
                     src = pkgs.lib.fileset.toSource {
                         root = ./.;
-                        fileset = pkgs.lib.fileset.intersection (pkgs.lib.fileset.fromSource (pkgs.lib.sources.cleanSource ./.)) (
-                            pkgs.lib.fileset.unions [
-                                ./.cargo
-                                ./src
-                                ./Cargo.toml
-                                ./Cargo.lock
-                            ]
-                        );
+                        fileset = pkgs.lib.fileset.unions [
+                            ./src
+                            ./Cargo.lock
+                            ./Cargo.toml
+                        ];
                     };
 
                     strictDeps = true;
