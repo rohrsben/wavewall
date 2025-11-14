@@ -5,6 +5,7 @@ Wavewall is a tiling wallpaper generator, with a focus on extreme control over t
 Requirements:
 - MSRV: 1.88.0
 - A terminal which supports true-color (for the `colors` subcommand)
+- A linux system, for the moment
 
 ## Roadmap
 - [ ] integer-multiple tile sizes
