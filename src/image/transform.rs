@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::AppError;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Transform {
@@ -16,7 +16,7 @@ impl std::str::FromStr for Transform {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            // REMINDER: if you change these, change them in tileset/mod.rs also
+            // REMINDER: if you change these, change them in create_pseudos() also
             //   or, figure out a better way to make create_pseudos() lol
             "90" => Ok(Transform::TurnOnce),
             "180" => Ok(Transform::TurnTwice),

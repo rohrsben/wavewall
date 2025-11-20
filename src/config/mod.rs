@@ -1,47 +1,107 @@
-pub mod output;
-pub mod generation;
-
-use std::{env, fs};
-
-use mlua::{Lua};
+mod parse;
+pub mod app;
+pub mod colorizer;
+pub mod tileset;
 
 use crate::error::AppError;
+use crate::user_data::ColorInfo;
+use hex_color::HexColor;
+use mlua::{Lua, Value};
+
+pub use app::AppConfig;
+pub use colorizer::Colorizer;
+pub use tileset::TilesetConfig;
 
 #[derive(Debug)]
 pub struct Config {
-    lua: Lua,
-    pub output: output::Output,
-    pub generation: generation::Generation,
+    pub lua: Lua,
+    pub app_config: AppConfig,
+    pub colorizer: Option<Colorizer>,
+    pub tileset_config: TilesetConfig,
 }
 
-pub fn parse() -> Result<Config, AppError> {
-    let lua = Lua::new();
+impl Config {
+    pub fn parse() -> Result<Self, AppError> {
+        let lua = Self::new_lua()?;
 
-    let config = fs::read_to_string("wavewall.lua")?;
-    let config = lua.load(config)
-        .set_name("@wavewall.lua")
-        .eval::<mlua::Table>()?;
+        let config = lua.load(std::fs::read_to_string(config_file())?)
+            .set_name("@wavewall.lua")
+            .eval::<mlua::Table>()?;
 
-    let output = output::parse(
-        config.get::<mlua::Value>("output")?
-    )?;
+        let app_config = AppConfig::parse(
+            config.get::<Value>("app")?
+        )?;
 
-    let generation = generation::parse(
-        config.get::<mlua::Value>("generation")?
-    )?;
+        let colorizer = Colorizer::parse(
+            config.get::<Value>("colorizer")?
+        )?;
 
-    Ok(Config {
-        lua,
-        output,
-        generation
-    })
+        let tileset_config = TilesetConfig::parse(
+            config.get::<Value>("tileset")?
+        )?;
+
+        Ok(Self {
+            lua,
+            app_config,
+            colorizer,
+            tileset_config,
+        })
+    }
+
+    fn new_lua() -> Result<Lua, AppError> {
+        let lua = Lua::new();
+
+        let convert_rgb = lua.create_function(|_, (r, g, b)| {
+            let color = HexColor::rgb(r, g, b);
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_rgb", convert_rgb)?;
+
+        let convert_rgba = lua.create_function(|_, (r, g, b, a)| {
+            let color = HexColor::rgba(r, g, b, a);
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_rgba", convert_rgba)?;
+
+        let convert_hex = lua.create_function(|_, hex: String| {
+            let color = match HexColor::parse(&hex) {
+                Ok(color) => color,
+                Err(_) => return Err(mlua::Error::RuntimeError(format!("While calling hex_to_rgba: failed to parse '{hex}'")))
+            };
+
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("convert_hex", convert_hex)?;
+
+        lua.load(r#"
+            function create_all_pseudos(original)
+                return {
+                    [original .. '_90'] = '90',
+                    [original .. '_180'] = '180',
+                    [original .. '_270'] = '270',
+                    [original .. '_horizontal'] = 'horizontal',
+                    [original .. '_vertical'] = 'vertical',
+                    [original .. '_diagonal'] = 'diagonal',
+                    [original .. '_antidiagonal'] = 'antidiagonal',
+                }
+            end
+        "#).exec()?;
+
+        Ok(lua)
+    }
 }
 
 pub fn config_dir() -> String {
-    if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
+    if let Ok(xdg) = std::env::var("XDG_CONFIG_HOME") {
         format!("{xdg}/wavewall")
     } else {
-        let user = env::var("USER").unwrap();
+        let user = std::env::var("USER").unwrap();
         format!("/home/{user}/.config/wavewall")
     }
+}
+
+pub fn config_file() -> String {
+    format!("{}/wavewall.lua", config_dir())
 }

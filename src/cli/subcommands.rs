@@ -1,8 +1,8 @@
-use crate::Args;
+use super::Args;
 use crate::image::Image;
 use crate::config;
-use crate::error::AppError;
-use crate::tileset;
+use crate::AppError;
+use crate::runtime::get_tiles;
 
 use hex_color::HexColor;
 use clap::Subcommand;
@@ -11,7 +11,7 @@ use colored::Colorize;
 use std::collections::{BinaryHeap, HashMap};
 
 #[derive(Subcommand, Debug)]
-pub enum Commands {
+pub enum Subcommands {
     /// Generates a tile template
     Template {
         /// The length of the template image's sides
@@ -25,10 +25,10 @@ pub enum Commands {
     }
 }
 
-impl Commands {
+impl Subcommands {
     pub fn run(&self, args: &Args) -> Result<(), AppError> {
         match self {
-            Commands::Template { length } => {
+            Subcommands::Template { length } => {
                 let template = Image::create_template(*length);
 
                 let path = match &args.path {
@@ -40,9 +40,8 @@ impl Commands {
 
                 template.save(&path)
             }
-            Commands::Colors { tileset } => {
-                let path = format!("{}/{}", config::config_dir(), tileset);
-                let images = tileset::parse_images(&path)?.into_values();
+            Subcommands::Colors { tileset } => {
+                let images = get_tiles(tileset)?.into_values();
 
                 let mut colors_hash: HashMap<HexColor, usize> = HashMap::new();
                 for image in images {
