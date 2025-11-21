@@ -1,5 +1,9 @@
+---
+title: PixelInfo
+---
+
 # About
-`PixelInfo` is provided to functions in a `colorizer`. It has the following fields:
+`PixelInfo` is a table provided to functions in a `colorizer`. It has the following fields:
 
 - `r`: the r value of the color (number from 0-255)
 - `g`: the g value of the color (number from 0-255)

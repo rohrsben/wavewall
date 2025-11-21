@@ -1,5 +1,6 @@
-use crate::error::AppError;
-use crate::parse;
+use crate::AppError;
+use crate::config::parse;
+use mlua::Value;
 
 #[derive(Debug)]
 pub struct Size {
@@ -7,28 +8,31 @@ pub struct Size {
     pub height: usize,
 }
 
-pub fn parse(input: mlua::Value) -> Result<Size, AppError> {
-    match input {
-        mlua::Value::Table(contents) => {
-            let width = parse::uint_necessary(
-                contents.get::<mlua::Value>("width")?,
-                "wavewall.output.size.width".to_string()
-            )?;
+impl Size {
+    pub fn parse(input: Value) -> Result<Self, AppError> {
+        match input {
+            Value::Table(table) => {
+                let width = parse::uint_necessary(
+                    table.get::<Value>("width")?,
+                    "output.size.width".to_string()
+                )?;
 
-            let height = parse::uint_necessary(
-                contents.get::<mlua::Value>("height")?,
-                "wavewall.output.size.height".to_string()
-            )?;
+                let height = parse::uint_necessary(
+                    table.get::<Value>("height")?,
+                    "output.size.height".to_string()
+                )?;
 
-            Ok(Size {
-                width: width as usize,
-                height: height as usize
-            })
+                Ok(Self {
+                    width: width as usize,
+                    height: height as usize
+                })
+            }
+            _ => Err(AppError::ConfigType(
+                format!("output.size"),
+                format!("table"),
+                input.type_name().to_string()
+            ))
         }
-        _ => Err(AppError::ConfigType(
-            format!("wavewall.output.size"),
-            format!("table"),
-            input.type_name().to_string()
-        ))
     }
 }
+

@@ -15,6 +15,8 @@ pub enum AppError {
 
     #[error("{0}")]
     Runtime(String),
+    #[error("Incorrect return type while calling colorizer on '{0}':\n  Expected: string, table\n  Got: {1}")]
+    RuntimeColorizerReturnType(String, String),
 
     #[error("Failed to convert string to a Transform")]
     TransformParse,
@@ -23,6 +25,9 @@ pub enum AppError {
     ImageDecode(#[from] png::DecodingError),
     #[error("Error encoding image: {0}")]
     ImageEncode(#[from] png::EncodingError),
+
+    #[error("Error choosing item: {0}")]
+    RandChoice(#[from] rand::distr::weighted::Error),
 
     #[error("Error converting color code: {0}")]
     HexColor(#[from] hex_color::ParseHexColorError),

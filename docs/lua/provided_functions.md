@@ -1,4 +1,10 @@
-# Provided in tileset.lua
+---
+title: Provided Functions
+--- 
+
+# About
+
+Wavewall provides some functions to use inside of its lua environment. These are intended to simplify some of the more annoying or repetitive parts of creating a tileset.
 
 ## `convert_rgb`
 ::: details Function Spec

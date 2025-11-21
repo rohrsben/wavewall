@@ -4,15 +4,16 @@ pub use transform::Transform;
 use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
+use std::path::PathBuf;
 
 use png::{Decoder, Encoder};
 use hex_color::HexColor;
 
 use crate::error::AppError;
 use crate::user_data::PixelInfo;
-use crate::tileset::tsconfig::Colorizer;
+use crate::config::Colorizer;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Image {
     pub width: usize,
     pub height: usize,
@@ -52,7 +53,7 @@ impl Image {
         template
     }
 
-    pub fn from_path(path: &str) -> Result<Self, AppError> {
+    pub fn from_path(path: PathBuf) -> Result<Self, AppError> {
         let file = File::open(path)?;
 
         let mut decoder = Decoder::new(BufReader::new(file));

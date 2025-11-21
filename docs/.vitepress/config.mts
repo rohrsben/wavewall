@@ -17,22 +17,12 @@ export default defineConfig({
     ],
 
     sidebar: [
-      { text: 'Introduction', link: '/introduction'},
       {
-        text: 'Wavewall',
+        text: 'Configuration',
         items: [
-          { text: 'Output', link: '/wavewall/output' },
-          { text: 'Generation', link: '/wavewall/generation' },
-        ],
-      },
-      {
-        text: 'Tileset',
-        items: [
-          { text: 'Info', link: '/tileset/info' },
-          { text: 'Selection', link: '/tileset/selection' },
-          { text: 'Pseudotiles', link: '/tileset/pseudotiles' },
-          { text: 'Recipes', link: 'tileset/recipes' },
-          { text: 'Colorizer', link: 'tileset/colorizer' },
+          { text: 'Output', link: '/configuration/output' },
+          { text: 'Tileset', link: '/configuration/tileset' },
+          { text: 'Colorizer', link: '/configuration/colorizer' }
         ],
       },
       {
@@ -56,6 +46,13 @@ export default defineConfig({
           { text: 'ColorInfo', link: '/userdata/colorinfo' },
         ],
       },
+      {
+        text: 'Other',
+        items: [
+          { text: 'Pseudotiles', link: '/other/pseudotiles' },
+          { text: 'Recipes', link: '/other/recipes' }
+        ],
+      }
     ],
 
     socialLinks: [
