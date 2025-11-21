@@ -16,7 +16,6 @@ pub enum Colorizer {
 
 impl Colorizer {
     pub fn parse(input: Value) -> Result<Option<Self>, AppError> {
-        println!("input: {:?}", input);
         match input {
             Value::Nil => Ok(None),
             Value::Function(func) => Ok(Some(Self::Function(func))),
