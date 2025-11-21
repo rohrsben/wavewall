@@ -11,6 +11,7 @@ Requirements:
 - [ ] integer-multiple tile sizes
 - [ ] connected component coloring
 - [ ] wave function collapse mode (the reason for the name!)
+- [ ] `check` subcommand
 
 ## Installation
 ### General
