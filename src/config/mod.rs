@@ -33,7 +33,7 @@ impl Config {
         )?;
 
         let output = Output::parse(
-            config.get::<Value>("app")?
+            config.get::<Value>("output")?
         )?;
 
         let tileset = TilesetConfig::parse(
