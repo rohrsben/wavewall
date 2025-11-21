@@ -40,8 +40,8 @@ fn main() {
 
     let runtime = question_mark(Runtime::from_config(config));
 
-    let mut result = Image::new(runtime.app_config.output.size.width, runtime.app_config.output.size.height);
-    let (x_offset, y_offset) = match runtime.app_config.generation.offset {
+    let mut result = Image::new(runtime.output.size.width, runtime.output.size.height);
+    let (x_offset, y_offset) = match runtime.output.offset {
         true => (
             rng.random_range(0..runtime.tile_size),
             rng.random_range(0..runtime.tile_size)

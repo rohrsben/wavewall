@@ -14,12 +14,12 @@ impl Size {
             Value::Table(table) => {
                 let width = parse::uint_necessary(
                     table.get::<Value>("width")?,
-                    "app.output.size.width".to_string()
+                    "output.size.width".to_string()
                 )?;
 
                 let height = parse::uint_necessary(
                     table.get::<Value>("height")?,
-                    "app.output.size.height".to_string()
+                    "output.size.height".to_string()
                 )?;
 
                 Ok(Self {
@@ -28,7 +28,7 @@ impl Size {
                 })
             }
             _ => Err(AppError::ConfigType(
-                format!("app.output.size"),
+                format!("output.size"),
                 format!("table"),
                 input.type_name().to_string()
             ))

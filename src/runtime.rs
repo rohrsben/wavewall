@@ -1,4 +1,4 @@
-use crate::config::{self, tileset::Pseudotile, AppConfig, Colorizer, Config};
+use crate::config::{self, tileset::Pseudotile, Output, Colorizer, Config};
 use crate::error::AppError;
 use crate::image::Image;
 use infer;
@@ -14,7 +14,7 @@ pub struct Runtime {
     pub tiles: HashMap<String, (Image, usize)>,
     pub tile_size: usize,
     pub colorizer: Option<Colorizer>,
-    pub app_config: AppConfig,
+    pub output: Output,
     pub recipe_name: String,
 }
 
@@ -36,28 +36,28 @@ impl Runtime {
     pub fn from_config(source: Config) -> Result<Self, AppError> {
         let Config {
             lua,
-            app_config,
+            output,
             colorizer,
-            tileset_config,
+            tileset,
         } = source;
 
-        let recipe_name = match tileset_config.recipe {
+        let recipe_name = match tileset.recipe {
             Some(recipe) => recipe,
             None => {
-                tileset_config.recipes.keys().choose(&mut rand::rng()).unwrap().clone()
+                tileset.recipes.keys().choose(&mut rand::rng()).unwrap().clone()
             }
         };
 
-        let recipe = match tileset_config.recipes.get(&recipe_name) {
+        let recipe = match tileset.recipes.get(&recipe_name) {
             Some(recipe) => recipe.clone(),
             None => return Err(AppError::Runtime(
                 format!("No recipe found with name: {recipe_name}")
             ))
         };
 
-        let mut all_tiles = get_tiles(&tileset_config.info.name)?;
+        let mut all_tiles = get_tiles(&tileset.info.name)?;
 
-        if let Some(wanted_pseudos) = tileset_config.pseudotiles {
+        if let Some(wanted_pseudos) = tileset.pseudotiles {
             for wanted_pseudo in wanted_pseudos {
                 let Pseudotile { name, original, transform } = wanted_pseudo;
 
@@ -95,7 +95,7 @@ impl Runtime {
             }
         }
 
-        let tile_size = match tileset_config.info.tile_size {
+        let tile_size = match tileset.info.tile_size {
             Some(size) => size,
             None => {
                 // we can just choose a random tile here
@@ -109,7 +109,7 @@ impl Runtime {
             tiles: runtime_tiles,
             tile_size,
             colorizer,
-            app_config,
+            output,
             recipe_name
         })
     }
@@ -119,12 +119,12 @@ impl Runtime {
             return path.to_owned()
         }
 
-        let dir = match &self.app_config.output.directory {
+        let dir = match &self.output.directory {
             Some(dir) => dir.to_owned(),
             None => config::config_dir()
         };
 
-        let filename = match &self.app_config.output.filename {
+        let filename = match &self.output.filename {
             Some(name) => name.to_owned(),
             None => format!("result.png")
         };

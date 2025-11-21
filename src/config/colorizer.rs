@@ -33,21 +33,23 @@ impl Colorizer {
                 )?;
 
                 let mut conversions = HashMap::new();
-                let conversions_table = parse::table_necessary(
-                    table.get::<Value>("conversions")?, 
-                    format!("colorizer.conversions")
-                )?;
-                for pair in conversions_table.pairs::<mlua::String, Value>() {
-                    let (color, converter) = pair?;
-                    let color = color.to_string_lossy();
+                for pair in table.pairs::<mlua::String, Value>() {
+                    let (original_color, converter) = pair?;
+
+                    let original_color = original_color.to_string_lossy();
 
                     let converter = Converter::parse(
-                        converter, 
-                        &color
+                        converter,
+                        &original_color
                     )?;
-                    let color = HexColor::parse(&color)?;
 
-                    conversions.insert(color, converter);
+                    let original_color = if original_color == "default" {
+                        continue
+                    } else {
+                        HexColor::parse(&original_color)?
+                    };
+
+                    conversions.insert(original_color, converter);
                 }
 
                 Ok(Some(Self::Table { 

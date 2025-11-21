@@ -1,5 +1,5 @@
 mod parse;
-pub mod app;
+pub mod output;
 pub mod colorizer;
 pub mod tileset;
 
@@ -8,16 +8,16 @@ use crate::user_data::ColorInfo;
 use hex_color::HexColor;
 use mlua::{Lua, Value};
 
-pub use app::AppConfig;
+pub use output::Output;
 pub use colorizer::Colorizer;
 pub use tileset::TilesetConfig;
 
 #[derive(Debug)]
 pub struct Config {
     pub lua: Lua,
-    pub app_config: AppConfig,
     pub colorizer: Option<Colorizer>,
-    pub tileset_config: TilesetConfig,
+    pub output: Output,
+    pub tileset: TilesetConfig,
 }
 
 impl Config {
@@ -28,23 +28,23 @@ impl Config {
             .set_name("@wavewall.lua")
             .eval::<mlua::Table>()?;
 
-        let app_config = AppConfig::parse(
-            config.get::<Value>("app")?
-        )?;
-
         let colorizer = Colorizer::parse(
             config.get::<Value>("colorizer")?
         )?;
 
-        let tileset_config = TilesetConfig::parse(
+        let output = Output::parse(
+            config.get::<Value>("app")?
+        )?;
+
+        let tileset = TilesetConfig::parse(
             config.get::<Value>("tileset")?
         )?;
 
         Ok(Self {
             lua,
-            app_config,
+            output,
             colorizer,
-            tileset_config,
+            tileset,
         })
     }
 

@@ -1,3 +1,7 @@
+---
+title: Lua Guide
+---
+
 # About
 This is not intended to be a full lua tutorial. This just helps differentiate and explain the more common ways that wavewall settings are created for people who have not programmed before.
 
@@ -79,6 +83,18 @@ Some options expect specific strings. Something like `Expected: string from ("a"
 
 ## Number
 A whole number, like `5` or `-100`. In almost every case these need to be positive; wavewall will tell you, but you'll probably also be able to figure it out yourself (what's a negative width?).
+
+::: info
+If you're particularly unlucky, you might see an error like this:
+
+```
+Incorrect type for '...'
+  Expected: number
+  Got: number
+```
+
+Make sure that you're not using a decimal. E.g. instead of `10.5`, use `10`
+:::
 
 ## Function
 Some options can be passed a lua function to enable more powerful features. I aim for users to never *need* to write a function, but in case you want to use one, check the documentation for that option to see what arguments the function requires and what return types it expects.

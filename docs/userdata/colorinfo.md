@@ -1,3 +1,7 @@
+---
+title: ColorInfo
+---
+
 # About
 `ColorInfo` is returned by the `convert` family of functions provided in `tileset.lua` (see [Provided Functions](/lua/provided_functions)). It has the following fields:
 
