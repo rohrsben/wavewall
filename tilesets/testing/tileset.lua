@@ -1,4 +1,7 @@
 return {
+    info = {
+        name = "testing"
+    },
     pseudotiles = {
         corner = {
             corner_90 = "90",
