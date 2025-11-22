@@ -49,6 +49,9 @@ return {
 
 ```lua [tileset.lua]
 return {
+    info = {
+        name = "my_tileset"
+    },
     recipes = {
         first_recipe = { }
     }
