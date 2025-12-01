@@ -113,6 +113,7 @@ impl Colorizer {
 
                     Ok(HexColor::rgba(r, g, b, a))
                 }
+                Value::Nil => Ok(HexColor::parse(&original_color)?),
                 _ => Err(AppError::RuntimeColorizerReturnType(
                     format!("{original_color}"),
                     output.type_name().to_string()
