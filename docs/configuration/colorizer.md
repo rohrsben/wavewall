@@ -13,9 +13,10 @@ Whether you write one main function, or a function that only operates on one col
 - *Output*: one of:
     - a hex code, like `"#FF0000"` or `"#FF0000FF"`
     - a table with `r`, `g`, `b`, and `a` values. `a` is optional, and will default to `255`
+    - `nil`, to leave the pixel unchanged
 ::: details Example
 ```lua
-function (info)
+colorizer = function (info)
     -- interchanges the r, g, and b values
     return {
         r = info.g,

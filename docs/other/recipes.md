@@ -61,3 +61,27 @@ tileset = {
 }
 ```
 :::
+
+- `placer` - nil, function
+
+Allows the user to choose where to place tiles.
+
+Function spec:
+- *Input*: one parameter, an [Anchor](/userdata/anchor)
+- *Output*: one of:
+    - `string`, here a tile name which is included in the recipe's `tiles`
+    - `nil`, to fall back to random selection according to `tiles`
+
+::: details Example
+```lua
+placer = function (anchor)
+    if anchor.y == 3 then
+        return "tile_a"
+    end
+
+    return nil
+end
+```
+
+This function sets all tiles in the 4th row to `tile_a`, and falls back to random selection otherwise
+:::

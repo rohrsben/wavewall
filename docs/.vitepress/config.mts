@@ -44,6 +44,7 @@ export default defineConfig({
         items: [
           { text: 'PixelInfo', link: '/userdata/pixelinfo' },
           { text: 'ColorInfo', link: '/userdata/colorinfo' },
+          { text: 'Anchor', link: '/userdata/anchor' },
         ],
       },
       {

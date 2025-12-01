@@ -1,2 +1,3 @@
-- store a reference to a pixel in the image, and then realize it with the colorizer function so that
-  theres only one pass?
+- perhaps the various phases in result can use minqueues? to easily allow for
+    removal of specific pixels/colors while keeping the order. in regards to
+    how to handle component coloring

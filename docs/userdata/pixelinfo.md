@@ -10,7 +10,10 @@ title: PixelInfo
 - `b`: the b value of the color (number from 0-255)
 - `a`: the a value of the color (number from 0-255)
 - `hex`: a string hex representation of the color (example: `"#00FF00FF"`)
-- `x`: the x index of the pixel in the output image
-- `y`: the y index of the pixel in the output image
+- `x`: the x index of the pixel in the output image (number)
+- `y`: the y index of the pixel in the output image (number)
+- `tile_x`: the x index of the pixel in its tile (number)
+- `tile_y`: the y index of the pixel in its tile (number)
+- `tile_name`: the name of the tile the pixel is inside of (string)
 
 `(x, y)` follows standard image indexing: `(0, 0)` in the top left, `(width - 1, height - 1)` in the bottom right.
