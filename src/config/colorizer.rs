@@ -1,5 +1,4 @@
 use crate::AppError;
-use crate::config::parse;
 use crate::user_data::PixelInfo;
 use hex_color::HexColor;
 use mlua::{Value, Function};

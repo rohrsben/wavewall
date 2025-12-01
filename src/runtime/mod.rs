@@ -1,8 +1,14 @@
+mod tile;
+
+pub use tile::Tile;
+pub use tile::TileIterInfo;
+
 use crate::config::{self, tileset::Pseudotile, Output, Colorizer, Config};
 use crate::error::AppError;
 use crate::image::Image;
+use crate::user_data::Anchor;
 use infer;
-use mlua::Lua;
+use mlua::{Lua, Function};
 use rand::prelude::*;
 use std::collections::HashMap;
 use std::fs::DirEntry;
@@ -10,8 +16,9 @@ use std::fs;
 
 #[derive(Debug)]
 pub struct Runtime {
-    pub lua: Lua,
-    pub tiles: HashMap<String, (Image, usize)>,
+    lua: Lua,
+    pub tiles: Vec<Tile>,
+    pub placer: Option<Function>,
     pub tile_size: usize,
     pub colorizer: Option<Colorizer>,
     pub output: Output,
@@ -19,18 +26,36 @@ pub struct Runtime {
 }
 
 impl Runtime {
-    pub fn get_tile_random(&self) -> &Image {
-        let options = self.tiles.values().collect::<Vec<_>>();
-        &options.choose_weighted(&mut rand::rng(), |it| it.1).unwrap().0
+    pub fn get_tile(&self, anchor: &Anchor) -> Result<Tile, AppError> {
+        match &self.placer {
+            Some(placer) => {
+                let output = placer.call::<mlua::String>(anchor.clone())?
+                    .to_string_lossy();
+
+                self.get_tile_specific(&output)
+            }
+            None => {
+                self.get_tile_random()
+            }
+        }
     }
 
-    pub fn get_tile_specific(&self, tile_name: &str) -> Result<&Image, AppError> {
-        match self.tiles.get(tile_name) {
-            Some(it) => Ok(&it.0),
-            None => Err(AppError::Runtime(
-                format!("No tile found with name {tile_name}")
-            ))
+    fn get_tile_random(&self) -> Result<Tile, AppError> {
+        let tile = self.tiles.choose_weighted(&mut rand::rng(), |it| it.weight)?.clone();
+
+        Ok(tile)
+    }
+
+    fn get_tile_specific(&self, tile_name: &str) -> Result<Tile, AppError> {
+        for tile in &self.tiles {
+            if tile.name == tile_name {
+                return Ok(tile.clone())
+            }
         }
+
+        Err(AppError::Runtime(
+            format!("No tile found with name {tile_name}")
+        ))
     }
 
     pub fn from_config(source: Config) -> Result<Self, AppError> {
@@ -49,11 +74,12 @@ impl Runtime {
         };
 
         let recipe = match tileset.recipes.get(&recipe_name) {
-            Some(recipe) => recipe.clone(),
+            Some(recipe) => recipe,
             None => return Err(AppError::Runtime(
                 format!("No recipe found with name: {recipe_name}")
             ))
         };
+
 
         let mut all_tiles = get_tiles(&tileset.info.name)?;
 
@@ -72,15 +98,21 @@ impl Runtime {
             }
         }
 
-        let mut runtime_tiles = HashMap::new();
+        let mut runtime_tiles = Vec::new();
 
-        match recipe.tiles {
+        match &recipe.tiles {
             Some(wanted_tiles) => {
                 for wanted_tile in wanted_tiles {
                     let (name, weight) = wanted_tile;
-                    match all_tiles.get(&name) {
-                        Some(tile) => {
-                            runtime_tiles.insert(name, (tile.clone(), weight))
+                    match all_tiles.get(name) {
+                        Some(image) => {
+                            let new_tile = Tile {
+                                name: name.clone(),
+                                weight: *weight,
+                                image: image.clone()
+                            };
+
+                            runtime_tiles.push(new_tile);
                         }
                         None => return Err(AppError::Runtime(
                             format!("No tile found with name: {name}")))
@@ -90,7 +122,13 @@ impl Runtime {
             None => {
                 for tile_info in all_tiles {
                     let (name, image) = tile_info;
-                    runtime_tiles.insert(name, (image, 1));
+                    let new_tile = Tile {
+                        name,
+                        weight: 1,
+                        image
+                    };
+
+                    runtime_tiles.push(new_tile);
                 }
             }
         }
@@ -98,15 +136,16 @@ impl Runtime {
         let tile_size = match tileset.info.tile_size {
             Some(size) => size,
             None => {
-                // we can just choose a random tile here
-                // that said, this is hideous and brittle
-                runtime_tiles.iter().choose(&mut rand::rng()).unwrap().1.0.width
+                runtime_tiles[0].image.width
             }
         };
+
+        let placer = recipe.placer.clone();
 
         Ok(Self {
             lua,
             tiles: runtime_tiles,
+            placer,
             tile_size,
             colorizer,
             output,

@@ -1,10 +1,12 @@
 use crate::error::AppError;
-use mlua::Value;
+use crate::config::parse;
+use mlua::{Value, Function};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Recipe {
     pub tiles: Option<Vec<(String, usize)>>,
+    pub placer: Option<Function>
 }
 
 impl Recipe {
@@ -46,8 +48,14 @@ impl Recipe {
                     recipe_name
                 )?;
 
+                let placer = parse::func(
+                    table.get::<Value>("placer")?, 
+                    format!("tileset.recipes.{recipe_name}.placer")
+                )?;
+
                 Ok(Self {
-                    tiles
+                    tiles,
+                    placer
                 })
             }
             _ => Err(AppError::ConfigType(

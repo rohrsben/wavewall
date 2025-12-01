@@ -3,14 +3,14 @@ pub mod output;
 pub mod colorizer;
 pub mod tileset;
 
+pub use output::Output;
+pub use colorizer::Colorizer;
+pub use tileset::TilesetConfig;
+
 use crate::error::AppError;
 use crate::user_data::ColorInfo;
 use hex_color::HexColor;
 use mlua::{Lua, Value};
-
-pub use output::Output;
-pub use colorizer::Colorizer;
-pub use tileset::TilesetConfig;
 
 #[derive(Debug)]
 pub struct Config {

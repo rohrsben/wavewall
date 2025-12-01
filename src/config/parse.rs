@@ -125,12 +125,12 @@ pub fn bool(input: mlua::Value, default: bool, location: String) -> Result<bool,
     }
 }
 
-pub fn bool_necessary(input: mlua::Value, location: String) -> Result<bool, AppError> {
-    match input {
-        mlua::Value::Boolean(b) => Ok(b),
-        _ => Err(AppError::ConfigType(location, format!("boolean"), input.type_name().to_string()))
-    }
-}
+// pub fn bool_necessary(input: mlua::Value, location: String) -> Result<bool, AppError> {
+//     match input {
+//         mlua::Value::Boolean(b) => Ok(b),
+//         _ => Err(AppError::ConfigType(location, format!("boolean"), input.type_name().to_string()))
+//     }
+// }
 
 pub fn func(input: mlua::Value, location: String) -> Result<Option<mlua::Function>, AppError> {
     match input {
@@ -140,19 +140,19 @@ pub fn func(input: mlua::Value, location: String) -> Result<Option<mlua::Functio
     }
 }
 
-pub fn table_necessary(input: mlua::Value, location: String) -> Result<mlua::Table, AppError> {
-    match input {
-        mlua::Value::Table(table) => {
-            if table.is_empty() {
-                return Err(AppError::ConfigEmptyTable(
-                    location
-                ))
-            }
-
-            Ok(table)
-        }
-        _ => Err(AppError::ConfigType(location, format!("table"), input.type_name().to_string()))
-    }
-}
+// pub fn table_necessary(input: mlua::Value, location: String) -> Result<mlua::Table, AppError> {
+//     match input {
+//         mlua::Value::Table(table) => {
+//             if table.is_empty() {
+//                 return Err(AppError::ConfigEmptyTable(
+//                     location
+//                 ))
+//             }
+//
+//             Ok(table)
+//         }
+//         _ => Err(AppError::ConfigType(location, format!("table"), input.type_name().to_string()))
+//     }
+// }
 
 
