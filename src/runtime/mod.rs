@@ -8,7 +8,7 @@ use crate::error::AppError;
 use crate::image::Image;
 use crate::user_data::Anchor;
 use infer;
-use mlua::{Lua, Function};
+use mlua::{Lua, Function, Value};
 use rand::prelude::*;
 use std::collections::HashMap;
 use std::fs::DirEntry;
@@ -29,10 +29,16 @@ impl Runtime {
     pub fn get_tile(&self, anchor: &Anchor) -> Result<Tile, AppError> {
         match &self.placer {
             Some(placer) => {
-                let output = placer.call::<mlua::String>(anchor.clone())?
-                    .to_string_lossy();
-
-                self.get_tile_specific(&output)
+                let output = placer.call::<Value>(anchor.clone())?;
+                match output {
+                    Value::String(str) => {
+                        let tile_name = str.to_string_lossy();
+                        self.get_tile_specific(&tile_name)
+                    }
+                    Value::Nil => self.get_tile_random(),
+                    _ => Err(AppError::Runtime(
+                        format!("Placer in recipe '{}' returned an incorrect type:\n  Expected: nil, string\n  Got: {}", self.recipe_name, output.type_name())))
+                }
             }
             None => {
                 self.get_tile_random()
@@ -54,7 +60,7 @@ impl Runtime {
         }
 
         Err(AppError::Runtime(
-            format!("No tile found with name {tile_name}")
+            format!("Placer in recipe {}: No tile found with name {tile_name}", self.recipe_name)
         ))
     }
 
