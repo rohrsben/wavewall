@@ -92,37 +92,31 @@ impl ResultTiles {
         } = self;
 
         let mut infos = Vec::new();
+        let in_bounds = image.in_bounds();
 
         for group in tiles {
             let (tile_anchor, pixel_anchor, tile) = group;
             let tile_name = tile.name.clone();
 
             for pixel in tile {
-                let TileIterInfo { 
-                    x: tile_x,
-                    y: tile_y,
-                    color }
-                = pixel;
                 let Anchor { 
                     x, y
-                } = pixel_anchor.with_offset(tile_x as i64, tile_y as i64);
-                let Anchor {
-                    x: anchor_x,
-                    y: anchor_y
-                } = tile_anchor;
+                } = pixel_anchor.with_offset(pixel.x as i64, pixel.y as i64);
 
-                let info = PixelInfo {
-                    x,
-                    y,
-                    tile_x,
-                    tile_y,
-                    color,
-                    tile_name: tile_name.clone(),
-                    anchor_x,
-                    anchor_y
-                };
+                if in_bounds(x, y) {
+                    let info = PixelInfo {
+                        x,
+                        y,
+                        tile_x: pixel.x,
+                        tile_y: pixel.y,
+                        color: pixel.color,
+                        tile_name: tile_name.clone(),
+                        anchor_x: tile_anchor.x,
+                        anchor_y: tile_anchor.y
+                    };
 
-                infos.push(info);
+                    infos.push(info);
+                }
             }
         }
 
@@ -140,19 +134,16 @@ impl ResultInfos {
             infos
         } = self;
 
-        let in_bounds = image.in_bounds();
         let xyti = image.xyti();
 
         for info in infos {
-            if in_bounds(info.x, info.y) {
-                let index = xyti(info.x as usize, info.y as usize);
-                let new_color = match &runtime.colorizer {
-                    Some(colorizer) => colorizer.apply(info)?,
-                    None => info.color
-                };
+            let index = xyti(info.x as usize, info.y as usize);
+            let new_color = match &runtime.colorizer {
+                Some(colorizer) => colorizer.apply(info)?,
+                None => info.color
+            };
 
-                image.pixels[index] = new_color;
-            }
+            image.pixels[index] = new_color;
         }
 
         Ok(ResultImage { 
