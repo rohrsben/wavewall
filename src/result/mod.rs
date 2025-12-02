@@ -18,7 +18,7 @@ pub struct ResultAnchors {
 
 pub struct ResultTiles {
     image: Image,
-    tiles: Vec<(Anchor, Tile)>
+    tiles: Vec<(Anchor, Anchor, Tile)>
 }
 
 pub struct ResultInfos {
@@ -71,10 +71,10 @@ impl ResultAnchors {
 
         let mut tiles = Vec::new();
 
-        for anchor in anchors {
-            let tile = runtime.get_tile(&anchor)?;
-            let anchor = anchor.scale_by(tile_size).with_offset(x_off, y_off);
-            tiles.push((anchor, tile));
+        for tile_anchor in anchors {
+            let tile = runtime.get_tile(&tile_anchor)?;
+            let pixel_anchor = tile_anchor.scale_by(tile_size).with_offset(x_off, y_off);
+            tiles.push((tile_anchor, pixel_anchor, tile));
         }
 
         Ok(ResultTiles {
@@ -88,13 +88,13 @@ impl ResultTiles {
     pub fn to_infos(self) -> ResultInfos {
         let ResultTiles {
             image,
-            tiles }
-        = self;
+            tiles
+        } = self;
 
         let mut infos = Vec::new();
 
-        for pair in tiles {
-            let (anchor, tile) = pair;
+        for group in tiles {
+            let (tile_anchor, pixel_anchor, tile) = group;
             let tile_name = tile.name.clone();
 
             for pixel in tile {
@@ -105,7 +105,11 @@ impl ResultTiles {
                 = pixel;
                 let Anchor { 
                     x, y
-                } = anchor.with_offset(tile_x as i64, tile_y as i64);
+                } = pixel_anchor.with_offset(tile_x as i64, tile_y as i64);
+                let Anchor {
+                    x: anchor_x,
+                    y: anchor_y
+                } = tile_anchor;
 
                 let info = PixelInfo {
                     x,
@@ -113,7 +117,9 @@ impl ResultTiles {
                     tile_x,
                     tile_y,
                     color,
-                    tile_name: tile_name.clone()
+                    tile_name: tile_name.clone(),
+                    anchor_x,
+                    anchor_y
                 };
 
                 infos.push(info);

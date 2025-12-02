@@ -30,7 +30,9 @@ pub struct PixelInfo {
     pub color: HexColor,
     pub tile_x: usize,
     pub tile_y: usize,
-    pub tile_name: String
+    pub tile_name: String,
+    pub anchor_x: i64,
+    pub anchor_y: i64,
 }
 
 impl UserData for PixelInfo {
@@ -43,6 +45,8 @@ impl UserData for PixelInfo {
 
         fields.add_field_method_get("x", |_, this| Ok(this.x));
         fields.add_field_method_get("y", |_, this| Ok(this.y));
+        fields.add_field_method_get("anchor_x", |_, this| Ok(this.anchor_x));
+        fields.add_field_method_get("anchor_y", |_, this| Ok(this.anchor_y));
 
         fields.add_field_method_get("tile_x", |_, this| Ok(this.tile_x));
         fields.add_field_method_get("tile_y", |_, this| Ok(this.tile_y));
