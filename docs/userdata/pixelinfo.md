@@ -12,6 +12,8 @@ title: PixelInfo
 - `hex`: a string hex representation of the color (example: `"#00FF00FF"`)
 - `x`: the x index of the pixel in the output image (number)
 - `y`: the y index of the pixel in the output image (number)
+- `anchor_x`: the x index of the tile's [anchor](/userdata/anchor) (number)
+- `anchor_y`: the y index of the tile's [anchor](/userdata/anchor) (number)
 - `tile_x`: the x index of the pixel in its tile (number)
 - `tile_y`: the y index of the pixel in its tile (number)
 - `tile_name`: the name of the tile the pixel is inside of (string)
