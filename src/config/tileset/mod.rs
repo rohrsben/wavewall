@@ -7,8 +7,10 @@ pub use pseudotiles::Pseudotile;
 pub use recipes::Recipe;
 
 use crate::AppError;
-use crate::config::parse;
-use mlua::Value;
+use crate::opt_complex;
+use crate::opt_simple;
+use crate::config::Location;
+use mlua::{Table, Value};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -19,39 +21,31 @@ pub struct TilesetConfig {
     pub recipes: HashMap<String, Recipe>,
 }
 
-impl TilesetConfig {
-    pub fn parse(input: Value) -> Result<Self, AppError> {
-        match input {
-            Value::Table(table) => {
-                let info = Info::parse(
-                    table.get::<Value>("info")?
-                )?;
+pub fn parse(input: Value, loc: &Location) -> Result<TilesetConfig, AppError> {
+    let loc = loc.add_parent("tileset");
 
-                let pseudotiles = Pseudotile::parse_all(
-                    table.get::<Value>("pseudotiles")?
-                )?;
+    match input {
+        Value::Table(table) => parse_table(table, &loc),
 
-                let recipe = parse::slost(
-                    table.get::<Value>("recipe")?, 
-                    format!("tileset.recipe")
-                )?;
-
-                let recipes = Recipe::parse_all(
-                    table.get::<Value>("recipes")?
-                )?;
-
-                Ok(Self {
-                    info,
-                    pseudotiles,
-                    recipe,
-                    recipes,
-                })
-            }
-            _ => Err(AppError::ConfigType(
-                format!("tileset"),
-                format!("table"),
-                input.type_name().to_string()
-            ))
-        }
+        _ => Err(AppError::IncorrectType {
+            location: loc.to_string(),
+            expected: format!("table"),
+            got: input.type_name().to_string()
+        })
     }
+}
+
+fn parse_table(table: Table, loc: &Location) -> Result<TilesetConfig, AppError> {
+    opt_complex!(info,        table, loc);
+    opt_complex!(recipes,     table, loc);
+    opt_complex!(pseudotiles, table, loc);
+    // TODO document loss of slost
+    opt_simple!(recipe, string, table, loc);
+
+    Ok(TilesetConfig {
+        info,
+        recipes,
+        recipe,
+        pseudotiles
+    })
 }

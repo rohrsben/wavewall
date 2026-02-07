@@ -1,6 +1,7 @@
 use crate::AppError;
-use crate::config::parse;
-use mlua::Value;
+use crate::opt_simple;
+use crate::config::{parse, Location};
+use mlua::{Table, Value};
 
 #[derive(Debug)]
 pub struct Info {
@@ -8,30 +9,26 @@ pub struct Info {
     pub tile_size: Option<usize>,
 }
 
-impl Info {
-    pub fn parse(input: Value) -> Result<Self, AppError> {
-        match input {
-            Value::Table(table) => {
-                let name = parse::string_necessary(
-                    table.get::<Value>("name")?, 
-                    format!("tileset.info.name")
-                )?;
+pub fn parse(input: Value, loc: &Location) -> Result<Info, AppError> {
+    let loc = loc.add_parent("info");
 
-                let tile_size = parse::uint(
-                    table.get::<Value>("tile_size")?, 
-                    format!("tileset.info.tile_size")
-                )?;
+    match input {
+        Value::Table(table) => parse_table(table, &loc),
 
-                Ok(Self {
-                    name,
-                    tile_size
-                })
-            }
-            _ => Err(AppError::ConfigType(
-                format!("tileset.info"),
-                format!("table"),
-                input.type_name().to_string()
-            ))
-        }
+        _ => Err(AppError::IncorrectType {
+            location: loc.to_string(),
+            expected: format!("table"),
+            got: input.type_name().to_string()
+        })
     }
+}
+
+fn parse_table(table: Table, loc: &Location) -> Result<Info, AppError> {
+    opt_simple!(name,      string_necessary, table, loc);
+    opt_simple!(tile_size, uint,             table, loc);
+
+    Ok(Info {
+        name,
+        tile_size
+    })
 }

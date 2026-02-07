@@ -1,158 +1,134 @@
-use crate::AppError;
+use crate::error::TypeError;
 use mlua::Value;
-use rand::prelude::*;
+use hex_color::{self, HexColor};
 
-pub fn string(input: mlua::Value, location: String) -> Result<Option<String>, AppError> {
-    match input {
-        mlua::Value::Nil => Ok(None),
-        mlua::Value::String(str) => Ok(Some(str.to_string_lossy())),
-        _ => Err(AppError::ConfigType(location, format!("nil, string"), input.type_name().to_string()))
-    }
-}
+pub fn string(input: Value) -> Result<Option<String>, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("nil, string"),
+        got: input.type_name().to_string()
+    });
 
-pub fn string_necessary(input: mlua::Value, location: String) -> Result<String, AppError> {
-    match input {
-        mlua::Value::String(str) => Ok(str.to_string_lossy()),
-        _ => Err(AppError::ConfigType(location, format!("string"), input.type_name().to_string()))
-    }
-}
-
-pub fn slost(input: Value, location: String) -> Result<Option<String>, AppError> {
     match input {
         Value::Nil => Ok(None),
         Value::String(str) => Ok(Some(str.to_string_lossy())),
-        Value::Table(table) => {
-            if table.is_empty() {
-                return Err(AppError::ConfigEmptyTable(
-                    location
-                ))
-            }
-
-            let mut options = Vec::new();
-
-            if table.sequence_values::<Value>().count() > 0 {
-                // list of string path
-                for item in table.sequence_values::<Value>() {
-                    let item = item?;
-                    match item {
-                        Value::String(str) => options.push((str.to_string_lossy(), 1)),
-                        _ => return Err(AppError::ConfigTypeListItem(
-                            location,
-                            format!("string"),
-                            item.type_name().to_string()
-                        ))
-                    }
-                }
-            } else {
-                // table path
-                for pair in table.pairs::<mlua::String, Value>() {
-                    let (item, weight) = pair?;
-
-                    let item = item.to_string_lossy();
-
-                    let weight = if let Value::Integer(int) = weight && int > 0 {
-                        int as usize
-                    } else {
-                        return Err(AppError::ConfigTypeTableItem (
-                            format!("{location}.{item}"),
-                            format!("positive number"),
-                            weight.type_name().to_string()
-                        ))
-                    };
-
-                    options.push((item, weight))
-                }
-            }
-
-            let choice = options.choose_weighted(&mut rand::rng(), |it| it.1)?;
-            Ok(Some(choice.0.clone()))
-        }
-        _ => Err(AppError::ConfigType(
-            location,
-            format!("nil, string, list of string, table"),
-            input.type_name().to_string()
-        ))
+        _ => err
     }
 }
 
-pub fn uint(input: mlua::Value, location: String) -> Result<Option<usize>, AppError> {
+pub fn string_necessary(input: Value) -> Result<String, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("string"),
+        got: input.type_name().to_string()
+    });
+
     match input {
-        mlua::Value::Nil => Ok(None),
-        mlua::Value::Integer(int) => {
-            if int < 0 {
-                return Err(AppError::ConfigType(location, format!("nil, positive number"), input.type_name().to_string()))
-            }
+        Value::String(str) => Ok(str.to_string_lossy()),
+        _ => err
+    }
+}
+
+pub fn uint(input: Value) -> Result<Option<usize>, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("nil, positive integer"),
+        got: input.type_name().to_string()
+    });
+
+    match input {
+        Value::Nil => Ok(None),
+        Value::Integer(int) => {
+            if int < 0 { return err }
 
             Ok(Some(int as usize))
         }
-        _ => Err(AppError::ConfigType(location, format!("nil, positive integer"), input.type_name().to_string()))
+        _ => err
     }
 }
 
-pub fn uint_necessary(input: mlua::Value, location: String) -> Result<usize, AppError> {
+pub fn uint_necessary(input: Value) -> Result<usize, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("positive integer"),
+        got: input.type_name().to_string()
+    });
+
     match input {
-        mlua::Value::Integer(int) => {
-            if int < 0 {
-                return Err(AppError::ConfigType(location, format!("positive number"), input.type_name().to_string()))
-            }
+        Value::Integer(int) => {
+            if int < 0 { return err }
 
             Ok(int as usize)
         }
-        _ => Err(AppError::ConfigType(location, format!("positive integer"), input.type_name().to_string()))
+        _ => err
     }
 }
 
-// pub fn int(input: mlua::Value, location: String) -> Result<Option<i64>, AppError> {
-//     match input {
-//         mlua::Value::Nil => Ok(None),
-//         mlua::Value::Integer(int) => Ok(Some(int)),
-//         _ => Err(AppError::ConfigType(location, format!("nil, number"), input.type_name().to_string()))
-//     }
-// }
+pub fn bool(input: Value) -> Result<Option<bool>, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("nil, boolean"),
+        got: input.type_name().to_string()
+    });
 
-// pub fn int_necessary(input: mlua::Value, location: String) -> Result<i64, AppError> {
-//     match input {
-//         mlua::Value::Integer(int) => Ok(int),
-//         _ => Err(AppError::ConfigType(location, format!("number"), input.type_name().to_string()))
-//     }
-// }
-
-pub fn bool(input: mlua::Value, default: bool, location: String) -> Result<bool, AppError> {
     match input {
-        mlua::Value::Nil => Ok(default),
-        mlua::Value::Boolean(b) => Ok(b),
-        _ => Err(AppError::ConfigType(location, format!("nil, boolean"), input.type_name().to_string()))
+        Value::Nil => Ok(None),
+        Value::Boolean(b) => Ok(Some(b)),
+        _ => err
     }
 }
 
-// pub fn bool_necessary(input: mlua::Value, location: String) -> Result<bool, AppError> {
-//     match input {
-//         mlua::Value::Boolean(b) => Ok(b),
-//         _ => Err(AppError::ConfigType(location, format!("boolean"), input.type_name().to_string()))
-//     }
-// }
+pub fn func(input: Value) -> Result<Option<mlua::Function>, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("nil, function"),
+        got: input.type_name().to_string()
+    });
 
-pub fn func(input: mlua::Value, location: String) -> Result<Option<mlua::Function>, AppError> {
     match input {
-        mlua::Value::Nil => Ok(None),
-        mlua::Value::Function(func) => Ok(Some(func)),
-        _ => Err(AppError::ConfigType(location, format!("nil, function"), input.type_name().to_string()))
+        Value::Nil => Ok(None),
+        Value::Function(func) => Ok(Some(func)),
+        _ => err
     }
 }
 
-// pub fn table_necessary(input: mlua::Value, location: String) -> Result<mlua::Table, AppError> {
-//     match input {
-//         mlua::Value::Table(table) => {
-//             if table.is_empty() {
-//                 return Err(AppError::ConfigEmptyTable(
-//                     location
-//                 ))
-//             }
-//
-//             Ok(table)
-//         }
-//         _ => Err(AppError::ConfigType(location, format!("table"), input.type_name().to_string()))
-//     }
-// }
+// RUNTIME CONVERTERS
 
+pub fn color(input: Value) -> Result<HexColor, String> {
+    match input {
+        Value::String(str) => {
+            match HexColor::parse(&str.to_string_lossy()) {
+                Ok(color) => Ok(color),
+                Err(e) => Err(format!("{e}"))
+            }
+        }
+        Value::Table(table) => {
+            let get_channel = |color: &str| {
+                let channel_val = match table.get::<Value>(color) {
+                    Ok(val) => val,
+                    Err(e) => return Err(format!("{e}"))
+                };
 
+                match channel_val {
+                    Value::Nil => {
+                        if color == "a" {
+                            Ok(255u8)
+                        } else {
+                            Err(format!("Input had no '{color}' field"))
+                        }
+                    }
+                    Value::Integer(int) => {
+                        if (0..=255).contains(&int) {
+                            Ok(int as u8)
+                        } else {
+                            Err(format!("Field '{color}' was out of bounds ({int})"))
+                        }
+                    }
+                    _ => Err(format!("Incorrect type for field '{color}'\n  Expected: positive number in [0, 255]\n  Got: {}", channel_val.type_name()))
+                }
+            };
+
+            let r = get_channel("r")?;
+            let g = get_channel("g")?;
+            let b = get_channel("b")?;
+            let a = get_channel("a")?;
+
+            Ok(HexColor::rgba(r, g, b, a))
+        }
+        _ => Err(format!("Incorrect type:\n  Expected: color\n  Got: {}", input.type_name()))
+    }
+}

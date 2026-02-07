@@ -1,3 +1,5 @@
+#![feature(assert_matches)]
+
 mod cli;
 mod config;
 mod error;
@@ -5,6 +7,7 @@ mod image;
 mod runtime;
 mod user_data;
 mod result;
+mod util;
 
 use error::AppError;
 use cli::Args;

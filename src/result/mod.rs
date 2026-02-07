@@ -2,7 +2,7 @@ use rand::Rng;
 use crate::Runtime;
 use crate::AppError;
 use crate::Image;
-use crate::runtime::{Tile, TileIterInfo};
+use crate::runtime::Tile;
 use crate::user_data::{Anchor, PixelInfo};
 
 // if, by some small odds, someone other than me is reading this:
@@ -33,8 +33,8 @@ pub struct ResultImage {
 impl ResultAnchors {
     pub fn new(runtime: &Runtime) -> Self {
         let image = Image::new(
-            runtime.output.size.width, 
-            runtime.output.size.height
+            runtime.output.width, 
+            runtime.output.height
         );
         let tile_size = runtime.tile_size as i64;
 

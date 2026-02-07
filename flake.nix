@@ -35,7 +35,7 @@
 
             devShells.x86_64-linux.default = pkgs.mkShell {
                 buildInputs = with pkgs; [
-                    rust-bin.beta.latest.default
+                    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default))
                     rust-analyzer
                     nodePackages.pnpm
                     nodejs

@@ -1,17 +1,20 @@
+use std::fmt::Display;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("{0}")]
-    ConfigLua(#[from] mlua::Error),
-    #[error("Incorrect type for '{0}'\n  Expected: {1}\n  Got: {2}")]
-    ConfigType(String, String, String),
-    #[error("Item with incorrect type in list '{0}':\n  Expected: {1}\n  Got: {2}")]
-    ConfigTypeListItem(String, String, String),
-    #[error("Item with incorrect type in table '{0}':\n  Expected: {1}\n  Got: {2}")]
-    ConfigTypeTableItem(String, String, String), // TODO specify the item?
+    Lua(#[from] mlua::Error),
+
+    #[error("Incorrect type ({location}):\n  Expected: {expected}\n  Got: {got}")]
+    IncorrectType { 
+        location: String,
+        expected: String,
+        got: String
+    },
     #[error("Unexpectedly empty table: '{0}'")]
-    ConfigEmptyTable(String),
+    EmptyTable(String),
 
     #[error("{0}")]
     Runtime(String),
@@ -34,4 +37,36 @@ pub enum AppError {
 
     #[error("IO Error: {0}")]
     IO(#[from] std::io::Error),
+}
+
+pub struct TypeError {
+    pub expected: String,
+    pub got: String
+}
+
+impl TypeError {
+    pub fn with_location(self, location: impl Display) -> TypeErrorLocation {
+        let Self { expected, got } = self;
+
+        TypeErrorLocation {
+            location: location.to_string(),
+            expected,
+            got
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct TypeErrorLocation {
+    pub location: String,
+    pub expected: String,
+    pub got: String
+}
+
+impl Into<AppError> for TypeErrorLocation {
+    fn into(self) -> AppError {
+        let Self { location, expected, got } = self;
+
+        AppError::IncorrectType { location, expected, got }
+    }
 }

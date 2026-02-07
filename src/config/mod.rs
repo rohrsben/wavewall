@@ -1,13 +1,17 @@
+mod gradient;
 mod parse;
-pub mod output;
+mod location;
 pub mod colorizer;
+pub mod output;
 pub mod tileset;
 
 pub use output::Output;
 pub use colorizer::Colorizer;
 pub use tileset::TilesetConfig;
+pub use location::Location;
 
 use crate::error::AppError;
+use crate::opt_complex;
 use crate::user_data::ColorInfo;
 use hex_color::HexColor;
 use mlua::{Lua, Value};
@@ -28,22 +32,16 @@ impl Config {
             .set_name("@wavewall.lua")
             .eval::<mlua::Table>()?;
 
-        let colorizer = Colorizer::parse(
-            config.get::<Value>("colorizer")?
-        )?;
+        let loc = Location::new("wavewall");
 
-        let output = Output::parse(
-            config.get::<Value>("output")?
-        )?;
-
-        let tileset = TilesetConfig::parse(
-            config.get::<Value>("tileset")?
-        )?;
+        opt_complex!(colorizer, config, loc);
+        opt_complex!(output,    config, loc);
+        opt_complex!(tileset,   config, loc);
 
         Ok(Self {
             lua,
-            output,
             colorizer,
+            output,
             tileset,
         })
     }
@@ -68,14 +66,14 @@ impl Config {
         let convert_hex = lua.create_function(|_, hex: String| {
             let color = match HexColor::parse(&hex) {
                 Ok(color) => color,
-                Err(_) => return Err(mlua::Error::RuntimeError(format!("While calling hex_to_rgba: failed to parse '{hex}'")))
+                Err(e) => return Err(mlua::Error::RuntimeError(format!("While calling hex_to_rgba: failed to parse '{hex}': {}", e)))
             };
 
             Ok(ColorInfo::new(color))
         })?;
         lua.globals().set("convert_hex", convert_hex)?;
 
-        lua.load(r#"
+        lua.load(r"
             function create_all_pseudos(original)
                 return {
                     [original .. '_90'] = '90',
@@ -87,7 +85,13 @@ impl Config {
                     [original .. '_antidiagonal'] = 'antidiagonal',
                 }
             end
-        "#).exec()?;
+        ").exec()?;
+
+        let gradient = lua.create_function(|_, args: Value| {
+            let color = gradient::gradient_wrapper(args)?;
+            Ok(ColorInfo::new(color))
+        })?;
+        lua.globals().set("gradient", gradient)?;
 
         Ok(lua)
     }

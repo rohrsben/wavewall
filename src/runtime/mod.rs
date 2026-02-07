@@ -7,7 +7,6 @@ use crate::config::{self, tileset::Pseudotile, Output, Colorizer, Config};
 use crate::error::AppError;
 use crate::image::Image;
 use crate::user_data::Anchor;
-use infer;
 use mlua::{Lua, Function, Value};
 use rand::prelude::*;
 use std::collections::HashMap;
