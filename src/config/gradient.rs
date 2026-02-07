@@ -1,7 +1,6 @@
 use hex_color::HexColor;
 use mlua::{Number, Value};
 use crate::config::parse;
-use crate::AppError;
 use palette::{convert::FromColorUnclamped, FromColor, Okhsv, Oklab, Srgb, Clamp};
 
 pub fn gradient_wrapper(input: Value) -> Result<HexColor, mlua::Error> {

@@ -1,7 +1,6 @@
 mod tile;
 
 pub use tile::Tile;
-pub use tile::TileIterInfo;
 
 use crate::config::{self, tileset::Pseudotile, Output, Colorizer, Config};
 use crate::error::AppError;
@@ -15,7 +14,7 @@ use std::fs;
 
 #[derive(Debug)]
 pub struct Runtime {
-    lua: Lua,
+    _lua: Lua,
     pub tiles: Vec<Tile>,
     pub placer: Option<Function>,
     pub tile_size: usize,
@@ -65,7 +64,7 @@ impl Runtime {
 
     pub fn from_config(source: Config) -> Result<Self, AppError> {
         let Config {
-            lua,
+            _lua,
             output,
             colorizer,
             tileset,
@@ -148,7 +147,7 @@ impl Runtime {
         let placer = recipe.placer.clone();
 
         Ok(Self {
-            lua,
+            _lua,
             tiles: runtime_tiles,
             placer,
             tile_size,

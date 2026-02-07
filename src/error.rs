@@ -18,8 +18,6 @@ pub enum AppError {
 
     #[error("{0}")]
     Runtime(String),
-    #[error("Incorrect return type while calling colorizer on '{0}':\n  Expected: string, table\n  Got: {1}")]
-    RuntimeColorizerReturnType(String, String),
 
     #[error("Failed to convert string to a Transform")]
     TransformParse,

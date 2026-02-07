@@ -7,7 +7,7 @@ use crate::opt_simple;
 pub struct Output {
     pub directory: Option<String>,
     pub filename: Option<String>,
-    pub offset: Option<bool>,
+    pub offset: bool,
     pub width: usize,
     pub height: usize,
 }
@@ -31,6 +31,9 @@ fn parse_table(table: Table, loc: &Location) -> Result<Output, AppError> {
     opt_simple!(offset,    bool,           table, loc);
     opt_simple!(width,     uint_necessary, table, loc);
     opt_simple!(height,    uint_necessary, table, loc);
+
+    // handle offset default
+    let offset = offset.unwrap_or_else(|| offset_default());
 
     Ok(Output {
         directory,

@@ -18,7 +18,7 @@ use mlua::{Lua, Value};
 
 #[derive(Debug)]
 pub struct Config {
-    pub lua: Lua,
+    pub _lua: Lua,
     pub colorizer: Option<Colorizer>,
     pub output: Output,
     pub tileset: TilesetConfig,
@@ -26,9 +26,9 @@ pub struct Config {
 
 impl Config {
     pub fn parse() -> Result<Self, AppError> {
-        let lua = Self::new_lua()?;
+        let _lua = Self::new_lua()?;
 
-        let config = lua.load(std::fs::read_to_string(config_file())?)
+        let config = _lua.load(std::fs::read_to_string(config_file())?)
             .set_name("@wavewall.lua")
             .eval::<mlua::Table>()?;
 
@@ -39,7 +39,7 @@ impl Config {
         opt_complex!(tileset,   config, loc);
 
         Ok(Self {
-            lua,
+            _lua,
             colorizer,
             output,
             tileset,

@@ -1,6 +1,6 @@
 use crate::AppError;
 use crate::opt_simple;
-use crate::config::{parse, Location};
+use crate::config::Location;
 use mlua::{Table, Value};
 
 #[derive(Debug)]
