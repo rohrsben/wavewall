@@ -91,7 +91,6 @@ impl ResultAnchors {
             }
 
             let mut max_scale = runtime.largest_tile_scale;
-            info!(max_scale);
 
             'outer: loop {
                 if max_scale == 1 { 
