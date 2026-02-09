@@ -1,4 +1,4 @@
-![Generated using the letters tileset](https://www.github.com/rohrsben/wavewall/blob/main/media/splash.png)
+![Generated using the letters tileset](media/splash.png)
 
 Wavewall is a tiling wallpaper generator, with a focus on extreme control over the result.
 
