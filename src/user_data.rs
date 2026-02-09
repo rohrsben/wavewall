@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use hex_color::HexColor;
 use mlua::UserData;
 
@@ -30,7 +32,7 @@ pub struct PixelInfo {
     pub color: HexColor,
     pub tile_x: usize,
     pub tile_y: usize,
-    pub tile_name: String,
+    pub tile_name: Rc<String>,
     pub anchor_x: i64,
     pub anchor_y: i64,
 }
@@ -50,7 +52,9 @@ impl UserData for PixelInfo {
 
         fields.add_field_method_get("tile_x", |_, this| Ok(this.tile_x));
         fields.add_field_method_get("tile_y", |_, this| Ok(this.tile_y));
-        fields.add_field_method_get("tile_name", |_, this| Ok(this.tile_name.clone())); // TODO more tilename clone cleanups
+        fields.add_field_method_get("tile_name", |_, this| Ok(
+            (*this.tile_name).clone()
+        ));
     }
 }
 

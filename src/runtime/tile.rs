@@ -1,11 +1,17 @@
 use crate::Image;
 use hex_color::HexColor;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Tile {
     pub name: String,
     pub weight: usize,
     pub image: Image,
+}
+
+impl std::fmt::Debug for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Tile {{ name = {}, weight = {}, image = ({} x {})}}", self.name, self.weight, self.image.width, self.image.height)
+    }
 }
 
 pub struct TileIter {

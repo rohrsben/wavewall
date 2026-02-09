@@ -21,8 +21,7 @@ use tracing_subscriber::EnvFilter;
 
 fn mainmain() -> Result<(), AppError> {
     let trace_format = tracing_subscriber::fmt::format()
-        .without_time()
-        .pretty();
+        .compact();
     let trace_filter = EnvFilter::from_default_env();
     tracing_subscriber::fmt()
         .event_format(trace_format)
