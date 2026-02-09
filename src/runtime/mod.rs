@@ -5,9 +5,10 @@ pub use tile::Tile;
 use crate::config::{self, tileset::Pseudotile, Output, Colorizer, Config};
 use crate::error::AppError;
 use crate::image::Image;
-use crate::user_data::Anchor;
+use crate::user_data::PlacerInfo;
 use mlua::{Lua, Function, Value};
 use rand::prelude::*;
+use tracing::{debug, info, trace};
 use std::collections::HashMap;
 use std::fs::DirEntry;
 use std::fs;
@@ -18,34 +19,45 @@ pub struct Runtime {
     pub tiles: Vec<Tile>,
     pub placer: Option<Function>,
     pub tile_size: usize,
+    pub largest_tile_scale: usize,
     pub colorizer: Option<Colorizer>,
     pub output: Output,
     pub recipe_name: String,
 }
 
 impl Runtime {
-    pub fn get_tile(&self, anchor: &Anchor) -> Result<Tile, AppError> {
+    pub fn get_tile(&self, info: PlacerInfo) -> Result<Tile, AppError> {
         match &self.placer {
             Some(placer) => {
-                let output = placer.call::<Value>(anchor.clone())?;
+                let output = placer.call::<Value>(info)?;
                 match output {
                     Value::String(str) => {
                         let tile_name = str.to_string_lossy();
-                        self.get_tile_specific(&tile_name)
+                        let result = self.get_tile_specific(&tile_name)?;
+
+                        if result.scale > info.max_scale {
+                            Err(AppError::Runtime(
+                                format!("Placer in recipe '{}' returned a tile with a larger-than-allowed scale", self.recipe_name)
+                            ))
+                        } else {
+                            Ok(result)
+                        }
                     }
-                    Value::Nil => self.get_tile_random(),
+                    Value::Nil => self.get_tile_random(info.max_scale),
                     _ => Err(AppError::Runtime(
                         format!("Placer in recipe '{}' returned an incorrect type:\n  Expected: nil, string\n  Got: {}", self.recipe_name, output.type_name())))
                 }
             }
             None => {
-                self.get_tile_random()
+                self.get_tile_random(info.max_scale)
             }
         }
     }
 
-    fn get_tile_random(&self) -> Result<Tile, AppError> {
-        let tile = self.tiles.choose_weighted(&mut rand::rng(), |it| it.weight)?.clone();
+    fn get_tile_random(&self, max_scale: usize) -> Result<Tile, AppError> {
+        let tile = self.tiles.choose_weighted(&mut rand::rng(), |it| {
+            if it.scale <= max_scale { it.weight } else { 0 }
+        })?.clone();
 
         Ok(tile)
     }
@@ -70,6 +82,8 @@ impl Runtime {
             tileset,
         } = source;
 
+        let tile_size = tileset.info.tile_size;
+
         let recipe_name = match tileset.recipe {
             Some(recipe) => recipe,
             None => {
@@ -82,7 +96,7 @@ impl Runtime {
                 format!("No recipe found with name: {recipe_name}")
             ))
         };
-
+        info!("Using recipe {recipe_name}");
 
         let mut all_tiles = get_tiles(&tileset.info.name)?;
 
@@ -101,17 +115,21 @@ impl Runtime {
             }
         }
 
+        let mut largest_tile_scale: usize = 1;
         let mut runtime_tiles = Vec::new();
-
         match &recipe.tiles {
             Some(wanted_tiles) => {
                 for wanted_tile in wanted_tiles {
                     let (name, weight) = wanted_tile;
                     match all_tiles.get(name) {
                         Some(image) => {
+                            let scale = image.width / tile_size;
+                            if scale > largest_tile_scale { largest_tile_scale = scale}
+
                             let new_tile = Tile {
                                 name: name.clone(),
                                 weight: *weight,
+                                scale,
                                 image: image.clone()
                             };
 
@@ -125,9 +143,14 @@ impl Runtime {
             None => {
                 for tile_info in all_tiles {
                     let (name, image) = tile_info;
+
+                    let scale = image.width / tile_size;
+                    if scale > largest_tile_scale { largest_tile_scale = scale}
+                    
                     let new_tile = Tile {
                         name,
                         weight: 1,
+                        scale,
                         image
                     };
 
@@ -136,13 +159,6 @@ impl Runtime {
             }
         }
 
-        let tile_size = match tileset.info.tile_size {
-            Some(size) => size,
-            None => {
-                runtime_tiles[0].image.width
-            }
-        };
-
         let placer = recipe.placer.clone();
 
         Ok(Self {
@@ -150,6 +166,7 @@ impl Runtime {
             tiles: runtime_tiles,
             placer,
             tile_size,
+            largest_tile_scale,
             colorizer,
             output,
             recipe_name

@@ -58,17 +58,12 @@ impl UserData for PixelInfo {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+// TODO I'm just leaving this in userdata for now but it
+// should move somewhere else
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Anchor {
     pub x: i64,
     pub y: i64
-}
-
-impl UserData for Anchor {
-    fn add_fields<F: mlua::UserDataFields<Self>>(fields: &mut F) {
-        fields.add_field_method_get("x", |_, this| Ok(this.x));
-        fields.add_field_method_get("y", |_, this| Ok(this.y));
-    }
 }
 
 impl Anchor {
@@ -88,5 +83,28 @@ impl Anchor {
             x: self.x + x_off,
             y: self.y + y_off
         }
+    }
+
+    pub fn as_placer_info(&self, max_scale: usize) -> PlacerInfo {
+        PlacerInfo {
+            x: self.x,
+            y: self.y,
+            max_scale
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct PlacerInfo {
+    pub x: i64,
+    pub y: i64,
+    pub max_scale: usize
+}
+
+impl UserData for PlacerInfo {
+    fn add_fields<F: mlua::UserDataFields<Self>>(fields: &mut F) {
+        fields.add_field_method_get("x", |_, this| Ok(this.x));
+        fields.add_field_method_get("y", |_, this| Ok(this.y));
+        fields.add_field_method_get("max_scale", |_, this| Ok(this.max_scale));
     }
 }

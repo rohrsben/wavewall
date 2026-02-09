@@ -5,7 +5,7 @@ pub use transform::Transform;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
-
+use tracing::{info, debug, trace};
 use png::{Decoder, Encoder};
 use hex_color::HexColor;
 
@@ -46,6 +46,7 @@ impl Image {
     }
 
     pub fn from_path(path: PathBuf) -> Result<Self, AppError> {
+        debug!("loading image from {}", path.display());
         let file = File::open(path)?;
 
         let mut decoder = Decoder::new(BufReader::new(file));
@@ -58,6 +59,8 @@ impl Image {
         let info = reader.next_frame(&mut output)?;
 
         let mut image = Self::new(info.width as usize, info.height as usize);
+        trace!("created {} x {} image", image.width, image.height);
+
         for i in 0..(image.width * image.height) {
             image.pixels[i] = HexColor::rgba(
                 output[i*4 + 0], 
@@ -95,6 +98,7 @@ impl Image {
             .collect::<Vec<_>>();
         writer.write_image_data(&data)?;
 
+        info!("saved final image to {path}");
         Ok(())
     }
 
@@ -163,9 +167,12 @@ impl Image {
         new_image
     }
 
-    // pub fn itxy(&self) -> impl Fn(usize) -> (usize, usize) {
-    //     |index: usize| (index % width, index / height)
-    // }
+    pub fn itxy(&self) -> impl Fn(usize) -> (usize, usize) {
+        let width = self.width;
+        let height = self.height;
+
+        move |index: usize| (index % width, index / height)
+    }
 
     pub fn xyti(&self) -> impl Fn(usize, usize) -> usize + use<> {
         let width = self.width;

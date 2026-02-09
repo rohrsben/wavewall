@@ -17,6 +17,7 @@ use image::Image;
 use result::*;
 use runtime::Runtime;
 use std::{env::set_current_dir, process};
+use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 fn mainmain() -> Result<(), AppError> {

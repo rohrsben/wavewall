@@ -5,6 +5,7 @@ use hex_color::HexColor;
 pub struct Tile {
     pub name: String,
     pub weight: usize,
+    pub scale: usize,
     pub image: Image,
 }
 
@@ -38,10 +39,10 @@ impl Iterator for TileIter {
     type Item = TileIterInfo;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let index_to_xy = |index: usize| (index % self.tile.image.width, index / self.tile.image.height);
+        let itxy = self.tile.image.itxy();
 
         if self.index < self.tile.image.pixels.len() {
-            let (x, y) = index_to_xy(self.index);
+            let (x, y) = itxy(self.index);
             let info = TileIterInfo {
                 x, y,
                 color: self.tile.image.pixels[self.index]

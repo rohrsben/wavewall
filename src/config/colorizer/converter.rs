@@ -17,11 +17,11 @@ pub fn parse(input: Value, loc: &Location) -> Result<Converter, AppError> {
         Value::Nil => Ok(Converter::Identity),
         
         Value::Function(func) => Ok(Converter::Function(func)),
-        Value::String(_) | Value::Table(_) => parse_color(input, &loc),
+        Value::String(_) | Value::Table(_) | Value::UserData(_) => parse_color(input, &loc),
 
         _ => Err(AppError::IncorrectType {
             location: loc.to_string(),
-            expected: format!("color, function (PixelInfo -> color)"),
+            expected: format!("color, function"),
             got: input.type_name().to_string()
         })
     }

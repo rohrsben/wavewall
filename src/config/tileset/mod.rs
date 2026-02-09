@@ -39,7 +39,7 @@ fn parse_table(table: Table, loc: &Location) -> Result<TilesetConfig, AppError> 
     opt_complex!(info,        table, loc);
     opt_complex!(recipes,     table, loc);
     opt_complex!(pseudotiles, table, loc);
-    // TODO document loss of slost
+
     opt_simple!(recipe, string, table, loc);
 
     Ok(TilesetConfig {
