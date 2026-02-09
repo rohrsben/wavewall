@@ -67,7 +67,7 @@ tileset = {
 Allows the user to choose where to place tiles.
 
 Function spec:
-- *Input*: one parameter, an [Anchor](/userdata/anchor)
+- *Input*: one parameter, a [`PlacerInfo` object](/userdata/placerinfo)
 - *Output*: one of:
     - `string`, here a tile name which is included in the recipe's `tiles`
     - `nil`, to fall back to random selection according to `tiles`
