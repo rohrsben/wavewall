@@ -82,7 +82,7 @@ impl Runtime {
             tileset,
         } = source;
 
-        let tile_size = tileset.info.tile_size;
+        let tile_size = tileset.info.base_tile_size;
 
         let recipe_name = match tileset.recipe {
             Some(recipe) => recipe,

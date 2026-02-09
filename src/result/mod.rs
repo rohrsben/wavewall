@@ -18,7 +18,6 @@ pub struct ResultAnchors {
     image: Image,
     tile_size: i64,
     anchors: Vec<Anchor>,
-    largest_anchor: Anchor
 }
 
 pub struct ResultTiles {
@@ -57,13 +56,10 @@ impl ResultAnchors {
         info!("created {} anchors", anchors.len());
         debug!(?anchors);
 
-        let largest_anchor = anchors.last().unwrap().clone();
-
         Self {
             image,
             tile_size,
             anchors,
-            largest_anchor
         }
     }
 
@@ -72,7 +68,6 @@ impl ResultAnchors {
             image,
             tile_size,
             anchors,
-            largest_anchor
         } = self;
 
         let mut rng = rand::rng();

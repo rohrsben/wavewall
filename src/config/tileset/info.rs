@@ -6,7 +6,7 @@ use mlua::{Table, Value};
 #[derive(Debug)]
 pub struct Info {
     pub name: String,
-    pub tile_size: usize,
+    pub base_tile_size: usize,
 }
 
 pub fn parse(input: Value, loc: &Location) -> Result<Info, AppError> {
@@ -24,11 +24,11 @@ pub fn parse(input: Value, loc: &Location) -> Result<Info, AppError> {
 }
 
 fn parse_table(table: Table, loc: &Location) -> Result<Info, AppError> {
-    opt_simple!(name,      string_necessary, table, loc);
-    opt_simple!(tile_size, uint_necessary,   table, loc);
+    opt_simple!(name,           string_necessary, table, loc);
+    opt_simple!(base_tile_size, uint_necessary,   table, loc);
 
     Ok(Info {
         name,
-        tile_size
+        base_tile_size
     })
 }

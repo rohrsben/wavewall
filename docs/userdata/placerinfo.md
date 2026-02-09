@@ -1,11 +1,12 @@
 ---
-title: Anchor
+title: PlacerInfo
 ---
 # About
-`Anchor` is a table provided to a `placer` function. It has the following fields:
+`PlacerInfo` is a table provided to a `placer` function. It has the following fields:
 
 - `x`: the x coordinate of the anchor
 - `y`: the y coordinate of the anchor
+- `max_scale`: the max integer-multiple size the tile that `placer` returns is allowed to be, as compared to `tileset.info.base_tile_size`
 
 The coordinates are not in pixels; rather, they are in tile lengths. If we imagine an output image that can fit four tiles inside it, the anchors would look like this:
 

@@ -15,15 +15,18 @@ I recommend defining this in a `tileset.lua` file which is contained in the tile
 - `name` - string
 
 This has to be the same as the tileset's folder
-- `tile_size` - nil, positive number
+- `base_tile_size` - positive number (pixels)
 
-For now, this is automatically inferred and doesn't need to be set. Stay tuned though!
+Informs wavewall of the "default", or 1x, tile size. Tiles are allowed to be integer multiples of this size.
+If you use multiple tile sizes, make sure that everything is actually an integer multiple! Gaps will appear
+in the output image otherwise.
 
 ::: details Example
 ```lua
 tileset = {
     info = {
-        name = "my_tileset"
+        name = "my_tileset",
+        base_tile_size = 100
     }
 }
 ```
