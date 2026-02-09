@@ -91,6 +91,7 @@ impl ResultAnchors {
             }
 
             let mut max_scale = runtime.largest_tile_scale;
+            info!(max_scale);
 
             'outer: loop {
                 if max_scale == 1 { 
@@ -99,8 +100,8 @@ impl ResultAnchors {
                     // we can safely break
                     break
                 } else {
-                    for x in 0..=runtime.largest_tile_scale as i64 {
-                        for y in 0..=runtime.largest_tile_scale as i64 {
+                    for x in 0..runtime.largest_tile_scale as i64 {
+                        for y in 0..runtime.largest_tile_scale as i64 {
                             let to_check = Anchor { 
                                 x: tile_anchor.x + x,
                                 y: tile_anchor.y + y
