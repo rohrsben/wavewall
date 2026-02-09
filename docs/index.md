@@ -8,26 +8,30 @@ Wavewall is designed to provide very high control over the output image. You can
 # How to use Wavewall
 Wavewall is configured using the programming language [lua](https://www.lua.org). If you know it already, great! You'll be excited about the cool stuff this enables wavewall to do. If you don't though, don't worry! Wavewall's configuration is designed to be easy to use even if you've never programmed before. First, check out the [guide](/lua/guide) for the basics, and then get started!
 
+::: info
+Requires are a bit wonky at the moment. If you have the files `tilesetdir/{tileset.lua, stuff.lua}`, and want to import `stuff` from `tileset`, you will still need to fully qualify it as `require "tilesetdir.stuff"`. Basically, everything is from the perspective of `wavewall.lua`.
+:::
+
 ***
 
 # Getting started
 First, create the configuration directory. This is either `$XDG_CONFIG_HOME/wavewall`, or `/home/<user>/.config/wavewall`. Then, inside the directory, create the file `wavewall.lua` and a directory for your tileset, along with a `tileset.lua`. It should be like this afterwards:
 ```
 wavewall
-├── my_tileset
-│   └── tileset.lua
-└── wavewall.lua
+├── wavewall.lua
+└── my_tileset
+    └── tileset.lua
 ```
 
 Now we need to add some tiles. At the moment these are required to be `.png` files, and they all need to be the same size. Running `wavewall template <size>` will create a template `.png` of that size, which you can then draw on to your desire (I found [PIXILART](https://www.pixilart.com) worked pretty well). To speed things up, you can alsy try out one of the tilesets I provide on the [github repo](https://github.com/rohrsben/wavewall/tree/main/tilesets). Put the tiles in your tileset directory like so:
 
 ```
 wavewall
-├── my_tileset
-│   ├── tile_a.png
-│   ├── tile_b.png
-│   └── tileset.lua
-└── wavewall.lua
+├── wavewall.lua
+└── my_tileset
+    ├── tile_a.png
+    ├── tile_b.png
+    └── tileset.lua
 ```
 
 Once you've got some tiles, you just need a configuration. Inside your `.lua` files insert this text:
@@ -37,10 +41,8 @@ local tileset_config = require("my_tileset.tileset")
 
 return {
     output = {
-        size = {
-            height = 500, -- or, your monitors resolution here!
-            width = 500
-        },
+        height = 500, -- or, your monitors resolution here!
+        width = 500
     },
 
     tileset = tileset_config

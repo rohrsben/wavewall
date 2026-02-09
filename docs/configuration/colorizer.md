@@ -13,8 +13,10 @@ Whether you write one main function, or a function that only operates on one col
 - *Output*: one of:
     - a hex code, like `"#FF0000"` or `"#FF0000FF"`
     - a table with `r`, `g`, `b`, and `a` values. `a` is optional, and will default to `255`
+    - a `ColorInfo` object, as received from a `convert` or `gradient` [provided function](/lua/provided_functions)
     - `nil`, to leave the pixel unchanged
-::: details Example
+
+::: details Examples
 ```lua
 colorizer = function (info)
     -- interchanges the r, g, and b values
@@ -24,6 +26,18 @@ colorizer = function (info)
         b = info.r,
         a = info.a
     }
+end
+
+colorizer = function (info)
+    -- sets a specific color to a gradient, only if it is in a 'tile_a'
+    -- otherwise, it leaves the color unchanged
+    if info.tile_name == 'tile_a' && info.hex == '#000000FF' then
+        local args = {
+            stops = { '#ff0000', '#00ff00', '#0000ff' },
+            at = info.x / image_width
+        }
+        return gradient(args)
+    end
 end
 ```
 :::

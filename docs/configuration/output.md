@@ -30,6 +30,24 @@ Any string that can be a valid filename on your operating system.
 `filename = "save_file.png"`
 :::
 
+### `height` - positive number
+The height of the created image, in pixels.
+
+::: details Example
+```
+height = 500
+```
+:::
+
+### `width` - positive number
+The width of the created image, in pixels.
+
+::: details Example
+```
+width = 500
+```
+:::
+
 ### `offset` - nil, bool
 Wavewall adds a small amount of offset to where it places the tiles, to create a bit of variance between generations. This setting allows you to disable that behaviour.
 
@@ -39,29 +57,11 @@ offset = false
 ```
 :::
 
-### `size` - table
-Specifies the dimensions of the output image.
-
-**Fields**:
-- `height` - positive number
-- `width` - positive number
-
-::: details Example
-```lua
-size = {
-    width = 1920,
-    height = 1080
-}
-```
-:::
-
 ## Example
 ```lua
 output = {
     filename = "not_result.png",
     directory = "/home/<user>/some/dir",
-    size = {
-        height = 50,
-        width = 1000
-    }
+    height = 50,
+    width = 1000
 }
