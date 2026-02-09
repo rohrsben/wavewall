@@ -4,59 +4,58 @@ mod cli;
 mod config;
 mod error;
 mod image;
+mod result;
 mod runtime;
 mod user_data;
-mod result;
 mod util;
 
-use error::AppError;
-use cli::Args;
 use clap::Parser;
+use cli::Args;
 use config::Config;
-use runtime::Runtime;
-use result::*;
-
+use error::AppError;
 use image::Image;
-
+use result::*;
+use runtime::Runtime;
 use std::{env::set_current_dir, process};
+use tracing_subscriber::EnvFilter;
 
-fn main() {
+fn mainmain() -> Result<(), AppError> {
+    let trace_format = tracing_subscriber::fmt::format()
+        .without_time()
+        .pretty();
+    let trace_filter = EnvFilter::from_default_env();
+    tracing_subscriber::fmt()
+        .event_format(trace_format)
+        .with_env_filter(trace_filter)
+        .init();
+
     let args = Args::parse();
 
-    match &args.command {
-        Some(c) => {
-            question_mark(c.run(&args));
-            process::exit(0)
-        }
-        None => {}
-    }
+    if let Some(c) = &args.command { return c.run(&args) }
 
     // TODO make dir if nonexistent? populate with default config?
     if let Err(e) = set_current_dir(config::config_dir()) {
-        println!("Failed to open configuration directory {}:\n{}", config::config_dir(), e);
-        process::exit(1)
+        return Err(AppError::Runtime(
+            format!("Failed to open configuration directory {}:\n{}", config::config_dir(), e)
+        ))
     }
 
-    let config = question_mark(Config::parse());
-    let runtime = question_mark(Runtime::from_config(config));
-
-    let result = ResultAnchors::new(&runtime);
-    let result = question_mark(result.to_tiles(&runtime));
-    let result = result.to_infos();
-    let result = question_mark(result.to_colors(&runtime));
-    let result = result.finalize();
-
+    let runtime = Runtime::from_config( Config::parse()? )?;
     let path = runtime.save_path(&args.path);
-    question_mark(result.save(&path));
+
+    let result = ResultAnchors::new(&runtime)
+        .to_tiles(&runtime)?
+        .to_infos()
+        .to_colors(&runtime)?
+        .finalize();
+
+    result.save(&path)
 }
 
-fn question_mark<T>(input: Result<T, AppError>) -> T {
-    match input {
-        Ok(result) => result,
-        Err(e) => {
-            println!("{}", e);
-            process::exit(1)
-        }
-   }
-}
+fn main() {
+    if let Err(err) = mainmain() {
+        println!("{err}");
 
+        process::exit(1)
+    }
+}

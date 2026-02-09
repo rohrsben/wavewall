@@ -77,9 +77,8 @@ impl Runtime {
             }
         };
 
-        let recipe = match tileset.recipes.get(&recipe_name) {
-            Some(recipe) => recipe,
-            None => return Err(AppError::Runtime(
+        let Some(recipe) = tileset.recipes.get(&recipe_name) else {
+            return Err(AppError::Runtime(
                 format!("No recipe found with name: {recipe_name}")
             ))
         };

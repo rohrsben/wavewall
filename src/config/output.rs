@@ -32,8 +32,8 @@ fn parse_table(table: Table, loc: &Location) -> Result<Output, AppError> {
     opt_simple!(width,     uint_necessary, table, loc);
     opt_simple!(height,    uint_necessary, table, loc);
 
-    // handle offset default
-    let offset = offset.unwrap_or_else(|| offset_default());
+    // handle defaults
+    let offset = offset.unwrap_or_else(offset_default);
 
     Ok(Output {
         directory,

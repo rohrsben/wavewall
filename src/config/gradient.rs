@@ -26,10 +26,10 @@ impl GradientArgs {
                     ))
                 };
 
-                let end = match parse::color(table.get::<Value>("last")?) {
+                let last = match parse::color(table.get::<Value>("last")?) {
                     Ok(color) => color,
                     Err(e) => return Err(mlua::Error::RuntimeError(
-                        format!("While processing 'gradient(end)': {e}")
+                        format!("While processing 'gradient(last)': {e}")
                     ))
                 };
 
@@ -40,7 +40,7 @@ impl GradientArgs {
                     ))
                 };
 
-                Ok(Self { start, last: end, at })
+                Ok(Self { start, last, at })
             }
             _ => Err(mlua::Error::RuntimeError(format!("While calling provided function 'gradient':\n  Expected: GradientArgs\n  Got: {}", input.type_name())))
         }
