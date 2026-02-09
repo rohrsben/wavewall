@@ -1,4 +1,4 @@
-use crate::{AppError, error::TypeErrorLocation};
+use crate::AppError;
 use crate::config::Location;
 use mlua::{Value, Table};
 use crate::opt_simple;
@@ -17,11 +17,12 @@ pub fn parse(input: Value, loc: &Location) -> Result<Output, AppError> {
 
     match input {
         Value::Table(table) => parse_table(table, &loc),
-        _ => Err(TypeErrorLocation {
+
+        _ => Err(AppError::IncorrectType {
             location: loc.to_string(),
             expected: format!("table"),
             got: input.type_name().to_string()
-        }.into())
+        })
     }
 }
 

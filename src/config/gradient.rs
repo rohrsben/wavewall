@@ -1,50 +1,104 @@
 use hex_color::HexColor;
-use mlua::{Number, Value};
-use crate::config::parse;
+use mlua::Value;
+use crate::{config::{parse, Location}, error::AppError};
 use palette::{convert::FromColorUnclamped, FromColor, Okhsv, Oklab, Srgb, Clamp};
+use tracing::{debug, trace};
+use crate::opt_simple;
 
 pub fn gradient_wrapper(input: Value) -> Result<HexColor, mlua::Error> {
-    let args = GradientArgs::parse(input)?;
+    let grad = match parse_gradient(input) {
+        Ok(g) => g,
+        Err(e) => return Err(mlua::Error::RuntimeError(format!("{e}")))
+    };
 
-    Ok(get_gradient_value(args))
+    let color = calculate_gradient(&grad);
+    debug!("gradient: {:?} -> {}", grad, color.display_rgba());
+
+    Ok(color)
 }
 
-struct GradientArgs {
-    start: HexColor,
-    last: HexColor,
+#[derive(Debug)]
+struct Gradient {
+    stops: Vec<HexColor>,
     at: f64
 }
 
-impl GradientArgs {
-    fn parse(input: mlua::Value) -> Result<Self, mlua::Error> {
-        match input {
-            mlua::Value::Table(table) => {
-                let start = match parse::color(table.get::<Value>("start")?) {
-                    Ok(color) => color,
-                    Err(e) => return Err(mlua::Error::RuntimeError(
-                        format!("While processing 'gradient(start)': {e}")
-                    ))
-                };
+fn parse_gradient(input: Value) -> Result<Gradient, AppError> {
+    let loc = Location::new("gradient args");
+    match input {
+        Value::Table(table) => {
+            let stops = parse_stops( table.get::<Value>("stops")?, &loc)?;
+            opt_simple!(at, float_necessary, table, loc);
 
-                let last = match parse::color(table.get::<Value>("last")?) {
-                    Ok(color) => color,
-                    Err(e) => return Err(mlua::Error::RuntimeError(
-                        format!("While processing 'gradient(last)': {e}")
-                    ))
-                };
-
-                let at = match table.get::<Number>("at") {
-                    Ok(at) => at,
-                    Err(e) => return Err(mlua::Error::RuntimeError(
-                        format!("While processing 'gradient(at)': {e}")
-                    ))
-                };
-
-                Ok(Self { start, last, at })
-            }
-            _ => Err(mlua::Error::RuntimeError(format!("While calling provided function 'gradient':\n  Expected: GradientArgs\n  Got: {}", input.type_name())))
+            Ok(Gradient { stops, at })
         }
+
+        _ => Err(AppError::Runtime(
+            format!("While calling gradient: argument had incorrect type\n  Expected: table\n  Got: {}", input.type_name())
+        ))
     }
+}
+
+fn parse_stops(input: Value, loc: &Location) -> Result<Vec<HexColor>, AppError> {
+    let loc = loc.add_parent("stops");
+
+    match input {
+        Value::Table(table) => {
+            let mut stops = Vec::new();
+
+            if table.sequence_values::<Value>().count() > 0 {
+                for item in table.sequence_values::<Value>() {
+                    let item = item?;
+                    let color = match parse::color(item) {
+                        Ok(color) => color,
+                        Err(e) => {
+                            let loc = loc.add_parent("table item");
+                            return Err(AppError::Runtime( format!("At {loc}: {e}")))
+                        }
+                    };
+                     
+                    stops.push(color);
+                }
+            } else {
+                return Err(AppError::EmptyTable(loc.to_string()))
+            }
+
+            trace!(?stops);
+
+            Ok(stops)
+        }
+
+        _ => Err(AppError::Runtime(
+            format!("{loc} was of incorrect type:\n  Expected: table\n  Got: {}", input.type_name())
+        ))
+    }
+}
+
+fn calculate_gradient(grad: &Gradient) -> HexColor {
+    let Gradient { stops, at } = grad;
+    trace!(at);
+
+    if *at <= 0.0 { return *stops.first().unwrap() }
+    if *at >= 1.0 { return *stops.last().unwrap() }
+
+    let n = stops.len() - 1;
+    trace!(n);
+    let i = f64::floor(at * n as f64) as usize;
+    trace!(i);
+    let at_local = (at - (i as f64 / n as f64)) / (1.0 / n as f64);
+    trace!(at_local);
+    let start_color = to_oklab(stops[i]);
+    trace!(?start_color);
+    let end_color = to_oklab(stops[i + 1]);
+    trace!(?end_color);
+
+    let new_color = Oklab::from_components((
+        start_color.l + at_local as f32 * (end_color.l - start_color.l),
+        start_color.a + at_local as f32 * (end_color.a - start_color.a),
+        start_color.b + at_local as f32 * (end_color.b - start_color.b)
+    ));
+
+    from_oklab(new_color)
 }
 
 fn to_oklab(color: HexColor) -> Oklab {
@@ -59,23 +113,4 @@ fn from_oklab(color: Oklab) -> HexColor {
     let srgb: Srgb<u8> = Srgb::from_color_unclamped(hsv).into();
 
     HexColor::rgb(srgb.red, srgb.green, srgb.blue)
-}
-
-
-fn get_gradient_value(args: GradientArgs) -> HexColor {
-    let loc = args.at as f32;
-
-    if loc <= 0.0 { return args.start }
-    if loc >= 1.0 { return args.last }
-
-    let (sl, sa, sb) = to_oklab(args.start).into_components();
-    let (el, ea, eb) = to_oklab(args.last).into_components();
-
-    let new = Oklab::new(
-        sl + loc * (el - sl),
-        sa + loc * (ea - sa),
-        sb + loc * (eb - sb)
-    );
-
-    from_oklab(new)
 }

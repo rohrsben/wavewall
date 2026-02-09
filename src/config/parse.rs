@@ -73,6 +73,18 @@ pub fn bool(input: Value) -> Result<Option<bool>, TypeError> {
     }
 }
 
+pub fn float_necessary(input: Value) -> Result<f64, TypeError> {
+    let err = Err(TypeError {
+        expected: format!("float"),
+        got: input.type_name().to_string()
+    });
+
+    match input {
+        Value::Number(f) => Ok(f),
+        _ => err
+    }
+}
+
 pub fn func(input: Value) -> Result<Option<mlua::Function>, TypeError> {
     let err = Err(TypeError {
         expected: format!("nil, function"),

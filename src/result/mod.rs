@@ -7,7 +7,7 @@ use crate::AppError;
 use crate::Image;
 use crate::runtime::Tile;
 use crate::user_data::{Anchor, PixelInfo};
-use tracing::{trace, debug, info, error};
+use tracing::{trace, debug, info};
 
 // if, by some small odds, someone other than me is reading this:
 // there's not like an actually good reason to use the typestate
@@ -27,7 +27,7 @@ pub struct ResultTiles {
 
 pub struct ResultInfos {
     image: Image,
-    tile_names: HashMap<String, Rc<String>>,
+    _tile_names: HashMap<String, Rc<String>>,
     infos: Vec<PixelInfo>,
 }
 
@@ -157,7 +157,7 @@ impl ResultTiles {
 
         ResultInfos {
             image,
-            tile_names,
+            _tile_names: tile_names,
             infos
         }
     }
@@ -167,7 +167,7 @@ impl ResultInfos {
     pub fn to_colors(self, runtime: &Runtime) -> Result<ResultImage, AppError> {
         let ResultInfos {
             mut image,
-            tile_names: _,
+            _tile_names: _,
             infos
         } = self;
 
