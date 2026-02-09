@@ -74,8 +74,8 @@ Function spec:
 
 ::: details Example
 ```lua
-placer = function (anchor)
-    if anchor.y == 3 then
+placer = function (info)
+    if info.y == 3 then
         return "tile_a"
     end
 
