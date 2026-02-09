@@ -5,7 +5,7 @@ use mlua::UserData;
 
 #[derive(Debug)]
 pub struct ColorInfo {
-    color: HexColor
+    pub color: HexColor
 }
 
 impl UserData for ColorInfo {

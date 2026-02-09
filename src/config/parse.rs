@@ -141,6 +141,18 @@ pub fn color(input: Value) -> Result<HexColor, String> {
 
             Ok(HexColor::rgba(r, g, b, a))
         }
+        Value::UserData(a) => {
+            if let Ok(Some(name)) = a.type_name() && name == "ColorInfo" {
+                return Ok(a.take::<crate::user_data::ColorInfo>().unwrap().color)
+            }
+
+            // just for slightly easier reading should this actually happen
+            if let Ok(Some(str)) = a.type_name() {
+                return Err(format!("Incorrect type:\n  Expected: color\n  Got: {str}"))
+            }
+
+            return Err(format!("Incorrect type:\n  Expected: color\n  Got: {:?}", a.type_name()))
+        }
         _ => Err(format!("Incorrect type:\n  Expected: color\n  Got: {}", input.type_name()))
     }
 }
