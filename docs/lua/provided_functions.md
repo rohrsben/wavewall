@@ -67,6 +67,14 @@ local blueish =  gradient(args)
 ```
 :::
 
+## `rand_range`
+Provides a random number in the given range.
+
+- Input: two parameters:
+    - `low`: positive number
+    - `high`: positive number
+- Output: a number within [high, low], aka inclusive.
+
 ## `create_all_pseudos`
 Eases the creation of pseudotiles. Given the name of an original, creates all 7 transforms with simple names.
 

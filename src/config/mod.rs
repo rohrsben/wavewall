@@ -15,6 +15,7 @@ use crate::opt_complex;
 use crate::user_data::ColorInfo;
 use hex_color::HexColor;
 use mlua::{Lua, Value};
+use rand::prelude::*;
 
 #[derive(Debug)]
 pub struct Config {
@@ -72,6 +73,17 @@ impl Config {
             Ok(ColorInfo::new(color))
         })?;
         lua.globals().set("convert_hex", convert_hex)?;
+
+        let rand_range = lua.create_function(|_, (first, last): (usize, usize)| {
+            let mut rng = rand::rng();
+
+            if first <= last {
+                return Ok(rng.random_range(first..=last))
+            } else {
+                return Ok(rng.random_range(last..=first))
+            }
+        })?;
+        lua.globals().set("rand_range", rand_range)?;
 
         lua.load(r"
             function create_all_pseudos(original)
